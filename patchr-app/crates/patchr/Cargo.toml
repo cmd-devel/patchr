@@ -1,0 +1,23 @@
+[package]
+name = "patchr"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+git = { path = "../git" }
+common = { path = "../common" }
+homedir = "0.2.1"
+log = "0.4.21"
+log4rs = "1.3.0"
+serde = "1.0.197"
+serde_json = "1.0.115"
+serde_yaml = "0.9.34"
+colored = "2.1.0"
+
+[dependencies.uuid]
+version = "1.8.0"
+features = [
+    "v4"
+]

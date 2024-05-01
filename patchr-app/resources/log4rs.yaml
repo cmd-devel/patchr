@@ -1,0 +1,10 @@
+refresh_rate: 30 seconds
+
+appenders:
+  stdout:
+    kind: console
+
+root:
+  level: trace # set trace so that we can filter at runtime using log
+  appenders:
+    - stdout
