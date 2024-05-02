@@ -67,6 +67,7 @@ Series:
             c1: initial commit
             c2: last commit
             to: target mailing list
+            -c: allows to add addresses to the CC field (separated by commas)
 
 User configuration:
     - Edit global configuration
