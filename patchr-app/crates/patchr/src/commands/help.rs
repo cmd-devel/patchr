@@ -27,13 +27,13 @@ patchr is a git patch series management program.
 
 Repo:
     - Register a new repo
-        patchr register [name]
+        patchr register <name>
 
     - List repos
         patchr repos
 
     - Delete a repo
-        patchr delrepo [name]
+        patchr delrepo <name>
 Series:
     The following commands can only be called from a registered repo
 
@@ -41,36 +41,36 @@ Series:
         patchr list
 
     - Show a series
-        patchr show [series]
+        patchr show <series>
 
     - Create a new series
-        patchr create [name] [title]
+        patchr create <name> <title>
 
     - Edit a series
-        patchr edit [target] [series]
+        patchr edit <target> <series>
             target: 'cv', 'title', 'name' or 'short'
             series: series name
 
     - Add a revision
-        patchr addrev [series]
+        patchr addrev <series>
 
     - Delete a revision
-        patchr delrev [series] [rev]
+        patchr delrev <series> <rev>
             rev: number of the revision to edit
 
     - Edit a revision
-        patchr editrev [series] [rev]
+        patchr editrev <series> <rev>
             rev: number of the revision to edit
 
     - Send a series
-        patchr send [series] [c1] [c2] [to]
+        patchr send <series> <c1> <c2> <to> [-c email1,...]
             c1: initial commit
             c2: last commit
             to: target mailing list
 
 User configuration:
     - Edit global configuration
-        patchr edit [target] [value]
+        patchr edit <target> <value>
             target: editor, sendcmd, from, smtpserver, smtpuser
             value: new value
 
