@@ -203,6 +203,11 @@ impl Parser {
         });
         match result {
             ControlFlow::Continue(mut r) => {
+                if let Some(f) = r.last_flag {
+                    cli_print_error!("Flag '{}' is expecting a value", f.str.as_str());
+                    return None;
+                };
+
                 let Some(builder) = r.main_command else {
                     cli_print!("No main command");
                     return Some(r.result)
