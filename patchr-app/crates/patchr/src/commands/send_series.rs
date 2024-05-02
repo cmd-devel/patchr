@@ -164,7 +164,7 @@ impl CommandBuilder for SendSeriesBuilder {
 
     fn requires_value(&self, flag: &str) -> Result<bool, CommandBuilderError> {
         if flag == CC_FLAG {
-            return Ok(false);
+            return Ok(true);
         }
         Err(CommandBuilderError::new(
             super::CommandBuilderErrorCode::UnknownFlag,
