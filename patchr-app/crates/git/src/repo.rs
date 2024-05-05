@@ -95,6 +95,18 @@ impl Repo {
         Ok(())
     }
 
+    pub fn delete_series(&mut self, name: &str) -> Result<(), GitError> {
+        let count = self.series.len();
+        self.series.retain(|s| s.name() != name);
+        if count == self.series.len() {
+            return Err(GitError::new(
+                GitErrorCode::UnknownSeries,
+                format!("The series named '{}' does not exist in this repo", name),
+            ));
+        }
+        Ok(())
+    }
+
     pub fn get_series_by_name(&self, name: &str) -> Option<&Series> {
         self.series.iter().find(|&s| s.name() == name)
     }

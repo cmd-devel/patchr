@@ -4,6 +4,7 @@ pub mod add_revision;
 mod common;
 pub mod configure;
 pub mod create_series;
+pub mod delete_series;
 pub mod delete_repo;
 pub mod delete_revision;
 pub mod edit_revision;
@@ -19,10 +20,7 @@ pub mod show_series;
 use crate::user_data::user_data::UserData;
 
 use self::{
-    add_revision::AddRevision, configure::Configure, create_series::CreateSeries,
-    delete_repo::DeleteRepo, delete_revision::DeleteRevision, edit_revision::EditRevision,
-    edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries,
-    register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries,
+    add_revision::AddRevision, configure::Configure, create_series::CreateSeries, delete_repo::DeleteRepo, delete_revision::DeleteRevision, delete_series::DeleteSeries, edit_revision::EditRevision, edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries, register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries
 };
 
 macro_rules! declare_flag {
@@ -47,6 +45,7 @@ declare_command!(REGISTER_REPO, register);
 declare_command!(DELETE_REPO, delrepo);
 declare_command!(LIST_REPOS, repos);
 declare_command!(CREATE_SERIES, create);
+declare_command!(DELETE_SERIES, delete);
 declare_command!(EDIT_SERIES, edit);
 declare_command!(CONFIGURE, config);
 declare_command!(ADD_REVISION, addrev);
@@ -132,6 +131,7 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         DELETE_REPO => Some(DeleteRepo::builder()),
         LIST_REPOS => Some(ListRepos::builder()),
         CREATE_SERIES => Some(CreateSeries::builder()),
+        DELETE_SERIES => Some(DeleteSeries::builder()),
         EDIT_SERIES => Some(EditSeries::builder()),
         CONFIGURE => Some(Configure::builder()),
         ADD_REVISION => Some(AddRevision::builder()),
