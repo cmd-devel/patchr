@@ -46,6 +46,9 @@ Series:
     - Create a new series
         patchr create <name> <title>
 
+    - Delete a series
+        patchr delete <name>
+
     - Edit a series
         patchr edit <target> <series>
             target: 'cv', 'title', 'name' or 'short'
