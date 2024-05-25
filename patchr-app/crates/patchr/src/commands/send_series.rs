@@ -81,7 +81,7 @@ impl Command for SendSeries {
         };
 
         let mut sender_builder = GitPatchSender::builder(from_email);
-        
+
         if let Some(send_command) = user_config.send_command() {
             sender_builder.set_send_command(send_command);
         };
@@ -97,7 +97,7 @@ impl Command for SendSeries {
         if let Some(smtp_encryption) = user_config.smtp_encryption() {
             sender_builder.set_smtp_encryption(smtp_encryption);
         };
-        
+
         let sender = sender_builder.build();
         let rtmp = result_to_control_flow(root_tmp_dir_path(), |e| {
             cli_print_error!("{}", e.to_string());

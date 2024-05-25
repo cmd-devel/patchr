@@ -1,12 +1,14 @@
 use std::ops::ControlFlow;
 
+pub mod add_mailing_list;
 pub mod add_revision;
 mod common;
 pub mod configure;
 pub mod create_series;
-pub mod delete_series;
+pub mod delete_mailing_list;
 pub mod delete_repo;
 pub mod delete_revision;
+pub mod delete_series;
 pub mod edit_revision;
 pub mod edit_series;
 pub mod help;
@@ -16,13 +18,15 @@ pub mod register_repo;
 pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
-pub mod add_mailing_list;
-pub mod delete_mailing_list;
 
 use crate::user_data::user_data::UserData;
 
 use self::{
-    add_mailing_list::AddMailingList, add_revision::AddRevision, configure::Configure, create_series::CreateSeries, delete_mailing_list::DeleteMailingList, delete_repo::DeleteRepo, delete_revision::DeleteRevision, delete_series::DeleteSeries, edit_revision::EditRevision, edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries, register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries
+    add_mailing_list::AddMailingList, add_revision::AddRevision, configure::Configure,
+    create_series::CreateSeries, delete_mailing_list::DeleteMailingList, delete_repo::DeleteRepo,
+    delete_revision::DeleteRevision, delete_series::DeleteSeries, edit_revision::EditRevision,
+    edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries,
+    register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries,
 };
 
 macro_rules! declare_flag {
