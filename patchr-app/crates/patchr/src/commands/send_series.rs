@@ -5,7 +5,7 @@ use git::patch_sender::{GitPatchSender, PatchSender};
 use log::{debug, trace};
 
 use crate::{
-    cli_print_error,
+    cli_print, cli_print_error,
     user_data::user_data::{root_tmp_dir_path, UserData},
 };
 
@@ -44,6 +44,16 @@ impl SendSeries {
 
     pub fn builder() -> Box<dyn CommandBuilder> {
         Box::new(SendSeriesBuilder::new())
+    }
+
+    fn get_to_email<'a>(&'a self, user_data: &'a UserData) -> &'a str {
+        if let Some(list) = user_data.find_mailing_list(self.to_email.as_str()) {
+            cli_print!("Found a mailing list : {} {}", list.name(), list.email());
+            list.email()
+        } else {
+            // it's up to the sender to check if the address is valid
+            self.to_email.as_str()
+        }
     }
 }
 
@@ -103,9 +113,10 @@ impl Command for SendSeries {
             cli_print_error!("{}", e.to_string());
             ()
         })?;
+        let to_email = self.get_to_email(user_data);
         let send_res = sender.send(
             series,
-            self.to_email.as_str(),
+            to_email,
             &rtmp,
             self.first_commit.as_str(),
             self.last_commit.as_str(),
