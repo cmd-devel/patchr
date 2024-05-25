@@ -12,7 +12,7 @@ use log::{debug, trace};
 
 use uuid::Uuid;
 
-use super::root_file::{RootFile, UserConfig, ROOT_FILE_NAME};
+use super::{mailing_list::MailingList, root_file::{RootFile, UserConfig, ROOT_FILE_NAME}};
 
 const USER_DATA_DIR: &str = ".patchr";
 
@@ -25,11 +25,14 @@ pub struct UserData {
 pub enum UserDataErrorCode {
     RepoAlreadyExists,
     RepoDoesNotExist,
+    ListDoesNotExist,
+    ListAlreadyExists,
     NotAGitRepo,
     FailedToSaveRootFile,
     FailedToSaveData,
     FailedToReadData,
     FsError,
+    InputError,
 }
 
 #[derive(Clone)]
@@ -248,6 +251,24 @@ impl UserData {
 
     pub fn config_mut(&mut self) -> &mut UserConfig {
         self.root_file.config_mut()
+    }
+
+    pub fn add_mailing_list(&mut self, name: &str, email: &str) -> Result<(), UserDataError> {
+        match self.root_file.add_mailing_list(name, email) {
+            Ok(()) => Ok(()),
+            Err(e) => {
+                debug!("{}", e);
+                Err(e)
+            }
+        }
+    }
+
+    pub fn delete_mailing_list(&mut self, name: &str) -> Result<(), UserDataError> {
+        self.root_file.delete_mailing_list(name)
+    }
+
+    pub fn find_mailing_list(&self, name : &str) -> Option<&MailingList> {
+        self.root_file.find_mailing_list(name)
     }
 }
 

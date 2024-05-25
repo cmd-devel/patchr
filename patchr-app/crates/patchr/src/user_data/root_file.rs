@@ -1,8 +1,13 @@
+use std::collections::HashMap;
+
 use common::constants::PROJECT_VERSION;
 use git::{repo::RepoMetadata, util::find_repo_root};
 use serde::{Deserialize, Serialize};
 
-use super::user_data::{UserDataError, UserDataErrorCode};
+use super::{
+    mailing_list::MailingList,
+    user_data::{UserDataError, UserDataErrorCode},
+};
 
 pub const ROOT_FILE_NAME: &str = "root.json";
 
@@ -21,6 +26,7 @@ pub struct UserConfig {
 pub struct RootFile {
     version: String,
     user_config: UserConfig,
+    lists: HashMap<String, MailingList>,
     repos: Vec<RepoMetadata>,
 }
 
@@ -68,11 +74,11 @@ impl UserConfig {
     pub fn set_smtp_server(&mut self, smtp_server: Option<&str>) {
         self.smtp_server = smtp_server.map(String::from);
     }
-    
+
     pub fn smtp_user(&self) -> Option<&str> {
         self.smtp_user.as_ref().map(String::as_str)
     }
-    
+
     pub fn set_smtp_user(&mut self, smtp_user: Option<&str>) {
         self.smtp_user = smtp_user.map(String::from);
     }
@@ -100,6 +106,7 @@ impl RootFile {
             version: String::from(PROJECT_VERSION),
             user_config: UserConfig::new(),
             repos: Vec::new(),
+            lists: HashMap::new(),
         }
     }
 
@@ -152,5 +159,37 @@ impl RootFile {
 
     pub fn config_mut(&mut self) -> &mut UserConfig {
         &mut self.user_config
+    }
+
+    pub fn add_mailing_list(&mut self, name: &str, email: &str) -> Result<(), UserDataError> {
+        if self.lists.contains_key(name) {
+            return Err(UserDataError::new(UserDataErrorCode::ListAlreadyExists));
+        }
+        if let Some(list) = MailingList::new(name, email) {
+            self.lists.insert(String::from(name), list);
+            Ok(())
+        } else {
+            Err(UserDataError::new_with_message(
+                UserDataErrorCode::InputError,
+                format!(
+                    "The list cannot be created, the address format must \
+                     be valid and the name must be an alphanumeric string"
+                ),
+            ))
+        }
+    }
+
+    pub fn delete_mailing_list(&mut self, name: &str) -> Result<(), UserDataError> {
+        match self.lists.remove(name) {
+            Some(_) => Ok(()),
+            None => Err(UserDataError::new_with_message(
+                UserDataErrorCode::ListDoesNotExist,
+                format!("List {} is not known", name),
+            )),
+        }
+    }
+
+    pub fn find_mailing_list(&self, name : &str) -> Option<&MailingList> {
+        self.lists.get(name)
     }
 }
