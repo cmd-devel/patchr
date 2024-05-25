@@ -70,7 +70,7 @@ Series:
         patchr send <series> <c1> <c2> <to> [-c email1,...]
             c1: initial commit
             c2: last commit
-            to: target mailing list
+            to: target mailing list or mailing list name
             -c: allows to add addresses to the CC field (separated by commas)
 
 User configuration:
@@ -78,6 +78,10 @@ User configuration:
         patchr edit <target> <value>
             target: editor, sendcmd, from, smtpserver, smtpuser
             value: new value
+    - Register a mailing list
+        patchr addlist <listname> <email address>
+    - Delete a mailing list
+        patchr dellist <list name>
 
 Global flags:
     -v verbose (increate verbosity)
