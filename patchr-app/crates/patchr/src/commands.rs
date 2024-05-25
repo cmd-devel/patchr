@@ -17,11 +17,12 @@ pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
 pub mod add_mailing_list;
+pub mod delete_mailing_list;
 
 use crate::user_data::user_data::UserData;
 
 use self::{
-    add_mailing_list::AddMailingList, add_revision::AddRevision, configure::Configure, create_series::CreateSeries, delete_repo::DeleteRepo, delete_revision::DeleteRevision, delete_series::DeleteSeries, edit_revision::EditRevision, edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries, register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries
+    add_mailing_list::AddMailingList, add_revision::AddRevision, configure::Configure, create_series::CreateSeries, delete_mailing_list::DeleteMailingList, delete_repo::DeleteRepo, delete_revision::DeleteRevision, delete_series::DeleteSeries, edit_revision::EditRevision, edit_series::EditSeries, list_repos::ListRepos, list_series::ListSeries, register_repo::RegisterRepo, send_series::SendSeries, show_series::ShowSeries
 };
 
 macro_rules! declare_flag {
@@ -55,6 +56,7 @@ declare_command!(EDIT_REVISION, editrev);
 declare_command!(SEND_SERIES, send);
 declare_command!(SHOW_SERIES, show);
 declare_command!(ADD_LIST, addlist);
+declare_command!(DELETE_LIST, dellist);
 
 pub trait Command {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()>;
@@ -142,6 +144,7 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         SEND_SERIES => Some(SendSeries::builder()),
         SHOW_SERIES => Some(ShowSeries::builder()),
         ADD_LIST => Some(AddMailingList::builder()),
+        DELETE_LIST => Some(DeleteMailingList::builder()),
         _ => None,
     }
 }
