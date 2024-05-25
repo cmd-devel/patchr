@@ -58,6 +58,7 @@ fn main() {
     let result = commands.iter().try_for_each(|c| c.exec(&mut user_data));
 
     if result.is_break() {
+        trace!("Execution stopped due to an error, changes will not be saved");
         exit(ErrorCode::CommandError.code());
     }
 
