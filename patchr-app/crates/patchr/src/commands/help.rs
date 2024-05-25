@@ -34,6 +34,7 @@ Repo:
 
     - Delete a repo
         patchr delrepo <name>
+
 Series:
     The following commands can only be called from a registered repo
 
