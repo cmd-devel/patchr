@@ -588,10 +588,13 @@ version = "0.1.0"
 dependencies = [
  "colored",
  "common",
+ "email_address",
  "git",
  "homedir",
+ "lazy_static",
  "log",
  "log4rs",
+ "regex",
  "serde",
  "serde_json",
  "serde_yaml",
