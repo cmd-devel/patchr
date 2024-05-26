@@ -80,13 +80,16 @@ User configuration:
             target: editor, sendcmd, from, smtpserver, smtpuser, smtpport, smtpenc
             value: new value (not compatible with -d)
             -d: delete the current value
+
     - Register a mailing list
         patchr addlist <listname> <email address>
+
     - Delete a mailing list
         patchr dellist <list name>
 
 Global flags:
     -v verbose (increate verbosity)
+
     -h print this help message
         "##,
             PROJECT_VERSION
