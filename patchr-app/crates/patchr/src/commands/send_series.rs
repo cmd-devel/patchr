@@ -1,8 +1,9 @@
-use std::ops::ControlFlow;
+use std::{io, ops::ControlFlow};
 
-use common::util::rust::result_to_control_flow;
+use common::util::{misc::LINE_SEP, rust::result_to_control_flow};
 use git::{
     patch_sender::{GitPatchSender, PatchSender},
+    repo::RepoData,
     series::SeriesLog,
 };
 use log::{debug, trace};
@@ -15,13 +16,17 @@ use crate::{
 use super::{Command, CommandBuilder, CommandBuilderError, SEND_SERIES};
 
 const CC_FLAG: &str = "c";
+const INTERACTIVE_FLAG: &str = "i";
+
+const YES_KEY: &str = "y";
 
 pub struct SendSeries {
     series_name: String,
-    first_commit: String,
-    last_commit: String,
+    first_commit: Option<String>,
+    last_commit: Option<String>,
     to_email: String,
     cc: Option<String>,
+    interactive: bool,
 }
 
 pub struct SendSeriesBuilder {
@@ -30,23 +35,28 @@ pub struct SendSeriesBuilder {
     last_commit: Option<String>,
     to_email: Option<String>,
     cc: Option<String>,
+    interactive: bool,
 }
 
 impl SendSeries {
-    fn new(
-        series_name: &str, first_commit: &str, last_commit: &str, to_email: &str, cc: Option<&str>,
-    ) -> Self {
+    fn new(series_name: &str, to_email: &str, cc: Option<&str>, interactive: bool) -> Self {
         SendSeries {
             series_name: String::from(series_name),
-            first_commit: String::from(first_commit),
-            last_commit: String::from(last_commit),
+            first_commit: None,
+            last_commit: None,
             to_email: String::from(to_email),
             cc: cc.map(|c| String::from(c)),
+            interactive,
         }
     }
 
     pub fn builder() -> Box<dyn CommandBuilder> {
         Box::new(SendSeriesBuilder::new())
+    }
+
+    fn set_commit_range(&mut self, first_commit: &str, last_commit: &str) {
+        self.first_commit = Some(String::from(first_commit));
+        self.last_commit = Some(String::from(last_commit));
     }
 
     fn get_to_email<'a>(&'a self, user_data: &'a UserData) -> &'a str {
@@ -56,6 +66,54 @@ impl SendSeries {
         } else {
             // it's up to the sender to check if the address is valid
             self.to_email.as_str()
+        }
+    }
+
+    fn select_range_interactively(&self, repo: &RepoData) -> Option<(String, String)> {
+        cli_print!(
+            "Press y for both the first and last commits of your \
+            series are printed, any other key otherwise"
+        );
+        // acc = (first commit, last_commit, error)
+        let mut first_last: (Option<String>, Option<String>, bool) = (None, None, false);
+
+        let res = repo.open_git_repo()?.walk_from_head(&mut |commit| {
+            cli_print!("Commit : {}", commit.hash());
+            cli_print!("Summary: {}", commit.short_name());
+            let mut k = String::new();
+            if io::stdin().read_line(&mut k).is_err() {
+                cli_print_error!("Failed to read the input");
+                first_last.2 = true;
+                return true;
+            }
+            cli_print!(); // new line
+            if k.trim().eq_ignore_ascii_case(YES_KEY) {
+                if first_last.1.is_none() {
+                    first_last.1 = Some(commit.hash());
+                    cli_print!("{} marked as last commit{}", commit.hash(), LINE_SEP);
+                } else {
+                    first_last.0 = Some(commit.hash());
+                    cli_print!("{} marked as first commit{}", commit.hash(), LINE_SEP);
+                    return false;
+                }
+            }
+            true
+        });
+        match res {
+            Ok(_) => {
+                if first_last.2 {
+                    return None;
+                }
+                if let (Some(first), Some(last)) = (first_last.0, first_last.1) {
+                    return Some((first, last));
+                }
+                cli_print_error!("Interactive input failed, abort");
+                None
+            }
+            Err(e) => {
+                cli_print_error!("{}", e);
+                None
+            }
         }
     }
 }
@@ -68,6 +126,7 @@ impl SendSeriesBuilder {
             last_commit: None,
             to_email: None,
             cc: None,
+            interactive: false,
         }
     }
 }
@@ -83,10 +142,7 @@ impl Command for SendSeries {
             return ControlFlow::Break(());
         };
 
-        let Some(series) = repo
-            .repo()
-            .get_series_by_name(self.series_name.as_str())
-        else {
+        let Some(series) = repo.repo().get_series_by_name(self.series_name.as_str()) else {
             cli_print_error!("Unknown series : {}", self.series_name.as_str());
             return ControlFlow::Break(());
         };
@@ -120,12 +176,21 @@ impl Command for SendSeries {
             ()
         })?;
         let to_email = self.get_to_email(user_data);
+        let mut first_commit = self.first_commit.clone();
+        let mut last_commit = self.last_commit.clone();
+        if self.interactive {
+            if let Some((f, l)) = self.select_range_interactively(repo) {
+                (first_commit, last_commit) = (Some(f), Some(l))
+            } else {
+                return ControlFlow::Break(());
+            }
+        }
         let send_res = sender.send(
             series,
             to_email,
             &rtmp,
-            self.first_commit.as_str(),
-            self.last_commit.as_str(),
+            first_commit.as_ref().unwrap(),
+            last_commit.as_ref().unwrap(),
             self.cc.as_deref(),
         );
 
@@ -149,12 +214,12 @@ impl CommandBuilder for SendSeriesBuilder {
             return Ok(());
         }
 
-        if self.first_commit.is_none() {
+        if !self.interactive && self.first_commit.is_none() {
             self.first_commit = Some(String::from(value));
             return Ok(());
         }
 
-        if self.last_commit.is_none() {
+        if !self.interactive && self.last_commit.is_none() {
             self.last_commit = Some(String::from(value));
             return Ok(());
         }
@@ -171,25 +236,41 @@ impl CommandBuilder for SendSeriesBuilder {
     }
 
     fn add_flag_and_value(&mut self, flag: &str, value: &str) -> Result<(), CommandBuilderError> {
-        if flag == CC_FLAG {
-            let value = value.trim();
-            self.cc = Some(String::from(value));
-            return Ok(());
+        match flag {
+            CC_FLAG => {
+                let value = value.trim();
+                self.cc = Some(String::from(value));
+                Ok(())
+            }
+            _ => Err(CommandBuilderError::new(
+                super::CommandBuilderErrorCode::UnknownFlag,
+                String::from(flag),
+            )),
         }
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnknownFlag,
-            String::from(flag),
-        ))
+    }
+
+    fn add_flag(&mut self, flag: &str) -> Result<(), CommandBuilderError> {
+        match flag {
+            INTERACTIVE_FLAG => {
+                self.interactive = true;
+                Ok(())
+            }
+            _ => Err(CommandBuilderError::new(
+                super::CommandBuilderErrorCode::UnknownFlag,
+                String::from(flag),
+            )),
+        }
     }
 
     fn requires_value(&self, flag: &str) -> Result<bool, CommandBuilderError> {
-        if flag == CC_FLAG {
-            return Ok(true);
+        match flag {
+            CC_FLAG => Ok(true),
+            INTERACTIVE_FLAG => Ok(false),
+            _ => Err(CommandBuilderError::new(
+                super::CommandBuilderErrorCode::UnknownFlag,
+                String::from(flag),
+            )),
         }
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnknownFlag,
-            String::from(flag),
-        ))
     }
 
     fn name(&self) -> &str {
@@ -197,16 +278,24 @@ impl CommandBuilder for SendSeriesBuilder {
     }
 
     fn build(&self) -> Result<Box<dyn Command>, CommandBuilderError> {
-        if let (Some(series_name), Some(first_commit), Some(last_commit), Some(to_email)) =
-            (&self.series_name, &self.first_commit, &self.last_commit, &self.to_email)
-        {
-            Ok(Box::new(SendSeries::new(
+        if let (Some(series_name), Some(to_email)) = (&self.series_name, &self.to_email) {
+            let mut s = Box::new(SendSeries::new(
                 series_name.as_str(),
-                first_commit.as_str(),
-                last_commit.as_str(),
                 to_email.as_str(),
                 self.cc.as_deref(),
-            )))
+                self.interactive,
+            ));
+            if !self.interactive {
+                if let (Some(f), Some(l)) = (&self.first_commit, &self.last_commit) {
+                    s.set_commit_range(f, l);
+                } else {
+                    return Err(CommandBuilderError::new(
+                        super::CommandBuilderErrorCode::MissingValue,
+                        String::from("Missing first or last commit sha1"),
+                    ));
+                }
+            }
+            Ok(s)
         } else {
             Err(CommandBuilderError::new(
                 super::CommandBuilderErrorCode::MissingValue,

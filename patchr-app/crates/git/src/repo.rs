@@ -1,7 +1,7 @@
 use common::constants::PROJECT_VERSION;
 use serde::{Deserialize, Serialize};
 
-use crate::{series::Series, GitError, GitErrorCode};
+use crate::{series::Series, util::GitRepo, GitError, GitErrorCode};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RepoMetadata {
@@ -63,6 +63,10 @@ impl RepoData {
 
     pub fn meta(&self) -> &RepoMetadata {
         &self.meta
+    }
+
+    pub fn open_git_repo(&self) -> Option<GitRepo> {
+        GitRepo::open(self.meta.path.as_str())
     }
 }
 

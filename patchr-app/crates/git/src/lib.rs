@@ -21,6 +21,7 @@ pub enum GitErrorCode {
     SendSeriesFailed,
     SeriesAlreadyExists,
     UnknownSeries,
+    RepoOpFailed,
 }
 
 impl GitError {
