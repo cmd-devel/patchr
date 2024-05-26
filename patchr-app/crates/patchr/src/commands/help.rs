@@ -77,7 +77,7 @@ Series:
 User configuration:
     - Edit global configuration
         patchr config [-d] <target> [value]
-            target: editor, sendcmd, from, smtpserver, smtpuser
+            target: editor, sendcmd, from, smtpserver, smtpuser, smtpport, smtpenc
             value: new value (not compatible with -d)
             -d: delete the current value
     - Register a mailing list
