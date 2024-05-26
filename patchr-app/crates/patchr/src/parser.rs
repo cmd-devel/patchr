@@ -142,7 +142,7 @@ impl Parser {
                 if requires_value {
                     state.last_flag = Some(token.clone());
                 } else {
-                    // flag is acceptes but does not require a value
+                    // flag is accepted but does not require a value
                     main_command.add_flag(token.str.as_str()).unwrap();
                 }
                 return Ok(None);
