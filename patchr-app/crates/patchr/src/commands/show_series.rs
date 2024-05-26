@@ -5,19 +5,24 @@ use log::debug;
 use crate::cli_print;
 use crate::{cli_print_error, user_data::user_data::UserData};
 
-use super::{Command, CommandBuilder, CommandBuilderError, SHOW_SERIES};
+use super::{Command, CommandBuilder, CommandBuilderError, CommandBuilderErrorCode, SHOW_SERIES};
+
+const VERBOSE_FLAG: &str = "v";
 
 pub struct ShowSeries {
     series_name: String,
+    verbose: bool,
 }
 pub struct ShowSeriesBuilder {
     series_name: Option<String>,
+    verbose: bool,
 }
 
 impl ShowSeries {
-    fn new(series_name: &str) -> Self {
+    fn new(series_name: &str, verbose: bool) -> Self {
         ShowSeries {
             series_name: String::from(series_name),
+            verbose,
         }
     }
 
@@ -28,7 +33,10 @@ impl ShowSeries {
 
 impl ShowSeriesBuilder {
     fn new() -> Self {
-        Self { series_name: None }
+        Self {
+            series_name: None,
+            verbose: false,
+        }
     }
 }
 
@@ -48,7 +56,11 @@ impl Command for ShowSeries {
             return ControlFlow::Break(());
         };
 
-        cli_print!("{}", series);
+        if self.verbose {
+            cli_print!("{:?}", series)
+        } else {
+            cli_print!("{}", series);
+        }
         ControlFlow::Continue(())
     }
 }
@@ -66,13 +78,35 @@ impl CommandBuilder for ShowSeriesBuilder {
         }
     }
 
+    fn add_flag(&mut self, flag: &str) -> Result<(), CommandBuilderError> {
+        if flag == VERBOSE_FLAG {
+            self.verbose = true;
+            return Ok(());
+        };
+
+        Err(CommandBuilderError::new(
+            CommandBuilderErrorCode::UnknownFlag,
+            String::from(flag),
+        ))
+    }
+
+    fn requires_value(&self, flag: &str) -> Result<bool, CommandBuilderError> {
+        if flag == VERBOSE_FLAG {
+            return Ok(false);
+        }
+        Err(CommandBuilderError::new(
+            super::CommandBuilderErrorCode::UnknownFlag,
+            String::from(flag),
+        ))
+    }
+
     fn name(&self) -> &str {
         SHOW_SERIES
     }
 
     fn build(&self) -> Result<Box<dyn Command>, CommandBuilderError> {
         if let Some(series_name) = self.series_name.as_ref() {
-            Ok(Box::new(ShowSeries::new(series_name.as_str())))
+            Ok(Box::new(ShowSeries::new(series_name.as_str(), self.verbose)))
         } else {
             Err(CommandBuilderError::new(
                 super::CommandBuilderErrorCode::MissingValue,
