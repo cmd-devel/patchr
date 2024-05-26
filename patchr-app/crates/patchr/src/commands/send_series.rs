@@ -1,7 +1,10 @@
 use std::ops::ControlFlow;
 
 use common::util::rust::result_to_control_flow;
-use git::patch_sender::{GitPatchSender, PatchSender};
+use git::{
+    patch_sender::{GitPatchSender, PatchSender},
+    series::SeriesLog,
+};
 use log::{debug, trace};
 
 use crate::{
@@ -80,7 +83,10 @@ impl Command for SendSeries {
             return ControlFlow::Break(());
         };
 
-        let Some(series) = repo.repo().get_series_by_name(self.series_name.as_str()) else {
+        let Some(series) = repo
+            .repo()
+            .get_series_by_name(self.series_name.as_str())
+        else {
             cli_print_error!("Unknown series : {}", self.series_name.as_str());
             return ControlFlow::Break(());
         };
@@ -124,7 +130,10 @@ impl Command for SendSeries {
         );
 
         match send_res {
-            Ok(_) => ControlFlow::Continue(()),
+            Ok(_) => {
+                SeriesLog::send(series, to_email);
+                ControlFlow::Continue(())
+            }
             Err(e) => {
                 cli_print_error!("Failed to send the series, {}", e);
                 ControlFlow::Break(())

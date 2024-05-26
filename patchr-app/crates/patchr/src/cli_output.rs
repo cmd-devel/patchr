@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! cli_print {
     ($($arg:tt)*) => {
-        println!($($arg)*);
+        println!($($arg)*)
     };
 }
 

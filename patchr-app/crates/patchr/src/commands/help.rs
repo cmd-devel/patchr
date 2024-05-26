@@ -42,7 +42,8 @@ Series:
         patchr list
 
     - Show a series
-        patchr show <series>
+        patchr show [-v] <series>
+            -v verbose
 
     - Create a new series
         patchr create <name> <title>
@@ -75,9 +76,10 @@ Series:
 
 User configuration:
     - Edit global configuration
-        patchr edit <target> <value>
+        patchr config [-d] <target> [value]
             target: editor, sendcmd, from, smtpserver, smtpuser
-            value: new value
+            value: new value (not compatible with -d)
+            -d: delete the current value
     - Register a mailing list
         patchr addlist <listname> <email address>
     - Delete a mailing list

@@ -1,6 +1,10 @@
-use std::{fmt::Display, ops::ControlFlow};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    ops::ControlFlow,
+};
 
-use common::util::misc::LINE_SEP;
+use common::util::misc::{DEFAULT_DATE_TIME_FORMAT, LINE_SEP};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -20,6 +24,7 @@ pub struct Series {
     cover_letter: String,
     short_name: String,
     revisions: Vec<SeriesRevision>,
+    logs: RefCell<Vec<SeriesLog>>,
 }
 
 // We only store the content for
@@ -27,6 +32,37 @@ pub struct Series {
 #[derive(Serialize, Deserialize)]
 pub struct SeriesRevision {
     content: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SeriesLog(String);
+
+impl SeriesLog {
+    fn log(series: &Series, op: &str, msg: &str) {
+        let log = SeriesLog(format!(
+            "{}: {} - {}",
+            chrono::offset::Local::now().format(DEFAULT_DATE_TIME_FORMAT),
+            op,
+            msg
+        ));
+        series.log(log);
+    }
+
+    pub fn send(series: &Series, to: &str) {
+        Self::log(
+            series,
+            "send",
+            &format!("revision {} send to {}", series.current_revision(), to),
+        );
+    }
+
+    pub fn add_revision(series: &mut Series, rev: usize) {
+        Self::log(series, "add revision", &format!("revision updated to {}", rev));
+    }
+
+    pub fn delete_revision(series: &mut Series, rev: usize) {
+        Self::log(series, "delete revision", &format!("revision {} deleted", rev));
+    }
 }
 
 impl Series {
@@ -43,6 +79,7 @@ impl Series {
             cover_letter: String::new(),
             short_name: String::new(),
             revisions: Vec::new(),
+            logs: RefCell::new(Vec::new()),
         })
     }
 
@@ -109,6 +146,7 @@ impl Series {
 
     pub fn add_revision(&mut self) {
         self.revisions.push(SeriesRevision::new(""));
+        SeriesLog::add_revision(self, self.current_revision() as usize);
     }
 
     fn revision_index(rev: usize) -> Option<usize> {
@@ -120,11 +158,12 @@ impl Series {
     }
 
     pub fn delete_revision(&mut self, n: usize) {
-        let Some(n) = Self::revision_index(n) else {
+        let Some(i) = Self::revision_index(n) else {
             return;
         };
-        if n < self.revisions.len() {
-            self.revisions.remove(n);
+        if i < self.revisions.len() {
+            self.revisions.remove(i);
+            SeriesLog::delete_revision(self, n);
         }
     }
 
@@ -161,6 +200,10 @@ impl Series {
             None
         }
     }
+
+    fn log(&self, log: SeriesLog) {
+        self.logs.borrow_mut().push(log)
+    }
 }
 
 impl Display for Series {
@@ -181,6 +224,22 @@ impl Display for Series {
         } else {
             Ok(())
         }
+    }
+}
+
+impl Debug for Series {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("Name : {}{}", self.name, LINE_SEP))?;
+        f.write_fmt(format_args!("Title : {}{}", self.title, LINE_SEP))?;
+        f.write_fmt(format_args!("Short name : {}{}", self.short_name, LINE_SEP))?;
+        f.write_fmt(format_args!("Revision : {}{}", self.current_revision(), LINE_SEP))?;
+        f.write_str(LINE_SEP)?;
+        Display::fmt(&self, f)?;
+        f.write_fmt(format_args!("Log :{}", LINE_SEP))?;
+        for l in self.logs.borrow().iter() {
+            f.write_fmt(format_args!("{}{}", l.0.as_str(), LINE_SEP))?;
+        }
+        Ok(())
     }
 }
 
