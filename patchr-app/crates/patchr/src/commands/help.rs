@@ -88,7 +88,7 @@ User configuration:
         patchr dellist <list name>
 
 Global flags:
-    -v verbose (increate verbosity)
+    -v verbose (increase verbosity, can be used multiple times)
 
     -h print this help message
         "##,
