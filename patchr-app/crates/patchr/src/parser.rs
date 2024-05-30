@@ -156,7 +156,9 @@ impl Parser {
     ) -> Result<Option<Box<dyn Command>>, ParsingError> {
         let result = if let Some(main_command) = &mut state.main_command {
             let builder_res = if let Some(last_flag) = &state.last_flag {
-                main_command.add_flag_and_value(last_flag.str.as_str(), token.str.as_str())
+                let res = main_command.add_flag_and_value(last_flag.str.as_str(), token.str.as_str());
+                state.last_flag = None;
+                res
             } else {
                 main_command.add_value(token.str.as_str())
             };
