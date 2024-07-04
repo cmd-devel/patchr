@@ -111,7 +111,8 @@ impl RootFile {
     }
 
     pub fn find_repo_by_path(&self, path: &str) -> Option<RepoMetadata> {
-        self.repos.iter().find(|r| r.path() == path).cloned()
+        let root_path = find_repo_root(path)?.to_string_lossy().to_string();
+        self.repos.iter().find(|r| r.path() == root_path).cloned()
     }
 
     // TODO: use a hash table instead?
@@ -141,10 +142,7 @@ impl RootFile {
         let count = self.repos.len();
         self.repos.retain(|r| r.name() != name);
         if count == self.repos.len() {
-            return Err(UserDataError::new_with_message(
-                UserDataErrorCode::RepoDoesNotExist,
-                format!("The repo named '{}' is not known", name),
-            ));
+            return Err(UserDataError::new(UserDataErrorCode::RepoDoesNotExist));
         }
         Ok(())
     }

@@ -32,8 +32,8 @@ Repo:
     - List repos
         patchr repos
 
-    - Delete a repo
-        patchr delrepo <name>
+    - Delete the current repo
+        patchr delrepo
 
 Series:
     The following commands can only be called from a registered repo

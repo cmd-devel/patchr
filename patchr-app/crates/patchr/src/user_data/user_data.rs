@@ -144,7 +144,7 @@ impl UserData {
             return Ok(()); // no repo to save
         };
 
-        let path = UserData::get_repo_data_file_path(repo.meta().name())?;
+        let path = UserData::get_repo_data_file_path(repo.meta())?;
         match File::options()
             .create(true)
             .write(true)
@@ -181,7 +181,7 @@ impl UserData {
         if let Some(meta) =
             root_file.find_repo_by_path(current_dir.to_string_lossy().to_string().as_str())
         {
-            let repo_data_file_path = UserData::get_repo_data_file_path(meta.name())?;
+            let repo_data_file_path = Self::get_repo_data_file_path(&meta)?;
             if !fs::metadata(&repo_data_file_path).is_ok_and(|m| m.is_file()) {
                 return Ok(None); // not in a repo
             }
@@ -224,8 +224,20 @@ impl UserData {
         }
     }
 
-    pub fn delete_repo(&mut self, name: &str) -> Result<(), UserDataError> {
-        self.root_file.delete_repo(name)?;
+    pub fn delete_repo(&mut self) -> Result<(), UserDataError> {
+        let Some(r) = self.repo.as_ref() else {
+            return Err(UserDataError::new_with_message(
+                UserDataErrorCode::RepoDoesNotExist,
+                format!("Not in a repo"),
+            ));
+        };
+        // The repo exists, deletion should not fail
+        self.root_file
+            .delete_repo(r.meta().name())
+            .expect("Failed to delete the repo, this is a bug");
+        let data_path = Self::get_repo_data_file_path(r.meta())?;
+        debug!("Delete repo data : {}", data_path.to_string_lossy());
+        let _ = fs::remove_file(&data_path);
         self.repo = None;
         Ok(())
     }
@@ -234,9 +246,9 @@ impl UserData {
         self.root_file.repos()
     }
 
-    fn get_repo_data_file_path(repo_name: &str) -> Result<PathBuf, UserDataError> {
+    fn get_repo_data_file_path(repo: &RepoMetadata) -> Result<PathBuf, UserDataError> {
         let mut r = root_file_dir_path()?;
-        r.push(repo_name);
+        r.push(repo.name());
         Ok(r)
     }
 
