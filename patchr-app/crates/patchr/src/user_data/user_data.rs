@@ -12,7 +12,10 @@ use log::{debug, trace};
 
 use uuid::Uuid;
 
-use super::{mailing_list::MailingList, root_file::{RootFile, UserConfig, ROOT_FILE_NAME}};
+use super::{
+    mailing_list::MailingList,
+    root_file::{RootFile, UserConfig, ROOT_FILE_NAME},
+};
 
 const USER_DATA_DIR: &str = ".patchr";
 
@@ -267,7 +270,7 @@ impl UserData {
         self.root_file.delete_mailing_list(name)
     }
 
-    pub fn find_mailing_list(&self, name : &str) -> Option<&MailingList> {
+    pub fn find_mailing_list(&self, name: &str) -> Option<&MailingList> {
         self.root_file.find_mailing_list(name)
     }
 }
