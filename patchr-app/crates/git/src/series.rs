@@ -210,15 +210,22 @@ impl Display for Series {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.cover_letter.as_str())?;
         f.write_str(LINE_SEP.repeat(2).as_str())?;
-        let r = self.revisions.iter().enumerate().try_for_each(|(i, elt)| {
-            if let Err(e) = f.write_fmt(format_args!("v{}{}", i + 2, LINE_SEP)) {
-                return ControlFlow::Break(e);
-            };
-            if let Err(e) = f.write_fmt(format_args!("{}{}", elt.to_string().as_str(), LINE_SEP)) {
-                return ControlFlow::Break(e);
-            };
-            ControlFlow::Continue(())
-        });
+        let r = self
+            .revisions
+            .iter()
+            .enumerate()
+            .rev()
+            .try_for_each(|(i, elt)| {
+                if let Err(e) = f.write_fmt(format_args!("v{}{}", i + 2, LINE_SEP)) {
+                    return ControlFlow::Break(e);
+                };
+                if let Err(e) =
+                    f.write_fmt(format_args!("{}{}", elt.to_string().as_str(), LINE_SEP))
+                {
+                    return ControlFlow::Break(e);
+                };
+                ControlFlow::Continue(())
+            });
         if let ControlFlow::Break(e) = r {
             Err(e)
         } else {
