@@ -35,7 +35,7 @@ pub enum UserDataErrorCode {
     InputError,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct UserDataError {
     code: UserDataErrorCode,
     message: Option<String>,
