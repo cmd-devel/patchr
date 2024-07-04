@@ -1,4 +1,4 @@
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 use crate::{GitError, GitErrorCode};
 
@@ -64,13 +64,19 @@ impl<'a> Commit<'a> {
 }
 
 pub fn find_repo_root(path: &str) -> Option<PathBuf> {
-    if let Ok(r) = git2::Repository::open(path) {
-        if r.is_bare() {
-            None // Not supported
-        } else {
-            Some(PathBuf::from(r.path().parent().unwrap()))
+    let mut p = PathBuf::from(path);
+    loop {
+        if let Ok(r) = git2::Repository::open(&p) {
+            if r.is_bare() {
+                return None; // Not supported
+            } else {
+                return Some(p);
+            }
         }
-    } else {
-        None
+
+        p = match p.parent() {
+            Some(p) => p.to_path_buf(),
+            None => return None,
+        };
     }
 }
