@@ -1,4 +1,4 @@
-use std::{fs, io, path::Path, process};
+use std::{fs, io, mem::MaybeUninit, path::Path, process, ptr};
 
 use common::{
     constants::GIT_COMMAND,
@@ -104,6 +104,24 @@ impl<'a> GitPatchSender<'a> {
     pub fn builder(from_email: &'a str) -> GitPatchSenderBuilder {
         GitPatchSenderBuilder::new(from_email)
     }
+
+    fn setup_signal_handler(signal: i32, handler: usize) {
+        unsafe {
+            let mut mask: libc::sigset_t = MaybeUninit::zeroed().assume_init();
+            if libc::sigemptyset(&mut mask as *mut libc::sigset_t) != 0 {
+                panic!("Failed to init sigset_t");
+            }
+            let sigaction = libc::sigaction {
+                sa_sigaction: handler,
+                sa_flags: 0,
+                sa_mask: mask,
+                sa_restorer: None,
+            };
+            if libc::sigaction(signal, &sigaction as *const libc::sigaction, ptr::null_mut()) != 0 {
+                panic!("Failed to init signal handler");
+            }
+        }
+    }
 }
 
 impl PatchSender for GitPatchSender<'_> {
@@ -194,7 +212,10 @@ impl PatchSender for GitPatchSender<'_> {
             send_email_cmd.arg(format!("--cc={}", c));
         };
 
+        // ignore Ctrl+C
+        Self::setup_signal_handler(libc::SIGINT, libc::SIG_IGN);
         let send_email_cmd_res = send_email_cmd.status();
+        Self::setup_signal_handler(libc::SIGINT, libc::SIG_DFL);
 
         let _ = fs::remove_dir_all(&tmp_out);
         let send_email_cmd_res = send_email_cmd_res
