@@ -197,8 +197,20 @@ impl PatchSender for GitPatchSender<'_> {
         let send_email_cmd_res = send_email_cmd.status();
 
         let _ = fs::remove_dir_all(&tmp_out);
-        send_email_cmd_res
-            .map_err(|e| GitError::new(GitErrorCode::CommandExecutionFailed, e.to_string()))
-            .map(to_unit)
+        let send_email_cmd_res = send_email_cmd_res
+            .map_err(|e| GitError::new(GitErrorCode::CommandExecutionFailed, e.to_string()));
+        match send_email_cmd_res {
+            Ok(res) => {
+                if res.success() {
+                    Ok(())
+                } else {
+                    Err(GitError::new(
+                        GitErrorCode::CommandExecutionFailed,
+                        String::from("subcommand failed"),
+                    ))
+                }
+            }
+            Err(e) => Err(e),
+        }
     }
 }
