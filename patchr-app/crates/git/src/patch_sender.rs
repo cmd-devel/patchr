@@ -159,6 +159,11 @@ impl PatchSender for GitPatchSender<'_> {
         };
 
         fs::create_dir(&tmp_out).or_else(return_err)?;
+
+        let mut short_name = String::from(series.short_name());
+        if !short_name.is_empty() {
+            short_name.push(' ');
+        }
         process::Command::new(GIT_COMMAND)
             .arg("format-patch")
             .arg("--cover-letter")
@@ -166,8 +171,8 @@ impl PatchSender for GitPatchSender<'_> {
             .arg("-o")
             .arg(&tmp_out) // output
             .arg(format!(
-                "--subject-prefix=PATCH {} v{}",
-                series.short_name(),
+                "--subject-prefix=PATCH {}v{}",
+                short_name,
                 series.current_revision()
             ))
             .arg(format!("{}..{}", first_commit, last_commit))
