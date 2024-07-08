@@ -1,6 +1,6 @@
 use std::{io, ops::ControlFlow};
 
-use common::util::{misc::LINE_SEP, rust::result_to_control_flow};
+use common::util::{input::sanitize_cc_list, misc::LINE_SEP, rust::result_to_control_flow};
 use git::{
     patch_sender::{GitPatchSender, PatchSender},
     repo::RepoData,
@@ -185,13 +185,23 @@ impl Command for SendSeries {
                 return ControlFlow::Break(());
             }
         }
+        let cc = match self.cc.as_deref() {
+            Some(c) => Some(c), // arg overrides config
+            None => {
+                if !series.cc().is_empty() {
+                    Some(series.cc())
+                } else {
+                    None
+                }
+            }
+        };
         let send_res = sender.send(
             series,
             to_email,
             &rtmp,
             first_commit.as_ref().unwrap(),
             last_commit.as_ref().unwrap(),
-            self.cc.as_deref(),
+            cc,
         );
 
         match send_res {
@@ -238,7 +248,18 @@ impl CommandBuilder for SendSeriesBuilder {
     fn add_flag_and_value(&mut self, flag: &str, value: &str) -> Result<(), CommandBuilderError> {
         match flag {
             CC_FLAG => {
-                let value = value.trim();
+                if self.cc.is_some() {
+                    return Err(CommandBuilderError::new(
+                        super::CommandBuilderErrorCode::UnexpectedValue,
+                        format!("reused flag -{}", flag),
+                    ));
+                }
+                let Some(value) = sanitize_cc_list(value) else {
+                    return Err(CommandBuilderError::new(
+                        super::CommandBuilderErrorCode::InvalidValues,
+                        format!("cc list format is invalid"),
+                    ));
+                };
                 self.cc = Some(String::from(value));
                 Ok(())
             }

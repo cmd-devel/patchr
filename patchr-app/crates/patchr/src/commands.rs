@@ -72,6 +72,7 @@ pub enum CommandBuilderErrorCode {
     UnexpectedValue,
     MissingValue,
     IncompatibleValues,
+    InvalidValues,
 }
 
 #[derive(Debug, Clone)]
