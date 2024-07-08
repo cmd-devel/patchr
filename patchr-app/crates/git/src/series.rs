@@ -4,7 +4,7 @@ use std::{
     ops::ControlFlow,
 };
 
-use common::util::misc::{DEFAULT_DATE_TIME_FORMAT, LINE_SEP};
+use common::util::{input::sanitize_cc_list, misc::{DEFAULT_DATE_TIME_FORMAT, LINE_SEP}};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -25,6 +25,7 @@ pub struct Series {
     short_name: String,
     revisions: Vec<SeriesRevision>,
     logs: RefCell<Vec<SeriesLog>>,
+    cc: String,
 }
 
 // We only store the content for
@@ -80,6 +81,7 @@ impl Series {
             short_name: String::new(),
             revisions: Vec::new(),
             logs: RefCell::new(Vec::new()),
+            cc: String::new(),
         })
     }
 
@@ -140,6 +142,22 @@ impl Series {
             Err(GitError::new(
                 GitErrorCode::StringFormatError,
                 String::from("Invalid short name format"),
+            ))
+        }
+    }
+
+    pub fn cc(&self) -> &str {
+        self.cc.as_str()
+    }
+
+    pub fn set_cc(&mut self, cc: &str) -> Result<(), GitError> {
+        if let Some(sanitized_cc) = sanitize_cc_list(cc) {
+            self.cc = String::from(sanitized_cc);
+            Ok(())
+        } else {
+            Err(GitError::new(
+                GitErrorCode::StringFormatError,
+                String::from("Invalid cc list format"),
             ))
         }
     }
