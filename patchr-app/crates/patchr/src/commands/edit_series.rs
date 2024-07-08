@@ -14,6 +14,7 @@ enum EditSeriesTarget {
     Title,
     Cv,
     ShortName,
+    Cc,
 }
 
 pub struct EditSeries {
@@ -35,6 +36,7 @@ impl TryFrom<&str> for EditSeriesTarget {
             "title" => Ok(EditSeriesTarget::Title),
             "cv" => Ok(EditSeriesTarget::Cv),
             "short" => Ok(EditSeriesTarget::ShortName),
+            "cc" => Ok(EditSeriesTarget::Cc),
             _ => Err(()),
         }
     }
@@ -86,6 +88,7 @@ impl Command for EditSeries {
             EditSeriesTarget::Title => series.title(),
             EditSeriesTarget::Cv => series.cover_letter(),
             EditSeriesTarget::ShortName => series.short_name(),
+            EditSeriesTarget::Cc => series.cc(),
         };
 
         let Some(new_content) = edit_in_text_editor(&user_config, content) else {
@@ -97,6 +100,7 @@ impl Command for EditSeries {
             EditSeriesTarget::Title => series.set_title(new_content.as_str()),
             EditSeriesTarget::Cv => series.set_cover_letter(new_content.as_str()),
             EditSeriesTarget::ShortName => series.set_short_name(new_content.as_str()),
+            EditSeriesTarget::Cc => series.set_cc(new_content.as_str()),
         };
 
         match update_res {

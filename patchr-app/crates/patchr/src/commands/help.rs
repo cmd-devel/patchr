@@ -53,7 +53,7 @@ Series:
 
     - Edit a series
         patchr edit <target> <series>
-            target: 'cv', 'title', 'name' or 'short'
+            target: 'cv', 'cc' (see send command for format), 'title', 'name' or 'short'
             series: series name
 
     - Add a revision
