@@ -190,4 +190,8 @@ impl RootFile {
     pub fn find_mailing_list(&self, name : &str) -> Option<&MailingList> {
         self.lists.get(name)
     }
+
+    pub fn version(&self) -> &str {
+        self.version.as_str()
+    }
 }

@@ -6,6 +6,7 @@ use std::{
     path::PathBuf,
 };
 
+use common::constants::PROJECT_VERSION;
 use git::repo::{Repo, RepoData, RepoMetadata};
 use homedir::get_my_home;
 use log::{debug, trace};
@@ -99,6 +100,16 @@ impl UserData {
         }
         let root_file = Self::read_or_create_root_file()?;
         let repo = UserData::find_current_repo(&root_file)?;
+
+        if root_file.version() != PROJECT_VERSION
+            || (repo.is_some() && repo.as_ref().unwrap().repo().version() != PROJECT_VERSION)
+        {
+            return Err(UserDataError::new_with_message(
+                UserDataErrorCode::FailedToReadData,
+                String::from("Version mismatch, consider using the migration script"),
+            ));
+        }
+
         Ok(Self { root_file, repo })
     }
 

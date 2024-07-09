@@ -118,4 +118,8 @@ impl Repo {
     pub fn get_series_by_name_mut(&mut self, name: &str) -> Option<&mut Series> {
         self.series.iter_mut().find(|s| s.name() == name)
     }
+
+    pub fn version(&self) -> &str {
+        self.version.as_str()
+    }
 }
