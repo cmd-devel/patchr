@@ -1,6 +1,6 @@
 use std::{env, process::exit};
 
-use log::{debug, trace};
+use log::trace;
 use parser::parse_command_line;
 use util::init_logger;
 
@@ -30,7 +30,7 @@ fn load_user_data_or_die() -> UserData {
         Ok(user_data) => user_data,
         Err(e) => {
             cli_print_error!("Failed to load user data");
-            debug!("{}", e.to_string());
+            cli_print_error!("{}", e.to_string());
             exit(ErrorCode::CannotReadUserData.code());
         }
     }
