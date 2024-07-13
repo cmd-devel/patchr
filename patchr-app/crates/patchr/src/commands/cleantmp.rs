@@ -22,6 +22,21 @@ impl CleanTmp {
     pub fn builder() -> Box<dyn CommandBuilder> {
         Box::new(CleanTmpBuilder::new())
     }
+
+    fn list_tmp(dir: &Path) -> ControlFlow<()> {
+        let it = match fs::read_dir(dir) {
+            Ok(it) => it,
+            Err(err) => {
+                cli_print_error!("Error: {}", err);
+                return ControlFlow::Break(());
+            }
+        };
+        it.for_each(|elt| match elt {
+            Ok(entry) => cli_print!("{}", entry.file_name().to_string_lossy()),
+            Err(err) => cli_print_error!("Error: {}", err),
+        });
+        ControlFlow::Continue(())
+    }
 }
 
 impl CleanTmpBuilder {
@@ -35,6 +50,7 @@ impl Command for CleanTmp {
         debug!("Clean tmp");
         match root_tmp_dir_path() {
             Ok(dir) => {
+                Self::list_tmp(dir.as_path())?;
                 match fs::remove_dir_all(dir) {
                     Ok(()) => {
                         cli_print!("Done");
