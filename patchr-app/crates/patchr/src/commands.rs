@@ -2,6 +2,7 @@ use std::ops::ControlFlow;
 
 pub mod add_mailing_list;
 pub mod add_revision;
+pub mod cleantmp;
 mod common;
 pub mod configure;
 pub mod create_series;
@@ -18,6 +19,8 @@ pub mod register_repo;
 pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
+
+use cleantmp::CleanTmp;
 
 use crate::user_data::user_data::UserData;
 
@@ -61,6 +64,7 @@ declare_command!(SEND_SERIES, send);
 declare_command!(SHOW_SERIES, show);
 declare_command!(ADD_LIST, addlist);
 declare_command!(DELETE_LIST, dellist);
+declare_command!(CLEAN_TMP, cleantmp);
 
 pub trait Command {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()>;
@@ -150,6 +154,7 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         SHOW_SERIES => Some(ShowSeries::builder()),
         ADD_LIST => Some(AddMailingList::builder()),
         DELETE_LIST => Some(DeleteMailingList::builder()),
+        CLEAN_TMP => Some(CleanTmp::builder()),
         _ => None,
     }
 }
