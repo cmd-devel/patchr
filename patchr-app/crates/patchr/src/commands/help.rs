@@ -87,6 +87,10 @@ User configuration:
     - Delete a mailing list
         patchr dellist <list name>
 
+Patchr operations:
+    - Delete temporary files
+        patchr cleantmp
+
 Global flags:
     -v verbose (increase verbosity, can be used multiple times)
 
