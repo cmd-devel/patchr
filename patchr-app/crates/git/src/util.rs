@@ -65,6 +65,18 @@ impl GitRepo {
         }
         Ok(())
     }
+
+    pub fn find_commit(&self, commit: &CommitId) -> Result<Commit, GitError> {
+        match self.repo.find_commit(commit.oid) {
+            Ok(c) => {
+                return Ok(Commit::new(c))
+            }
+            Err(e) => {
+                return Err(GitError::repo_op_failed(e.message()))
+            }
+        }
+        
+    }
 }
 
 impl<'a> Commit<'a> {
