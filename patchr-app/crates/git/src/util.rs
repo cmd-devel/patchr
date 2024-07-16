@@ -17,6 +17,13 @@ pub struct CommitId {
     oid: git2::Oid,
 }
 
+#[derive(Clone)]
+pub enum CommitTag {
+    ReviewedBy,
+    SignedOffBy,
+    Custom(String),
+}
+
 impl CommitId {
     pub fn new(hex: &str) -> Result<Self, GitError> {
         let oid = match git2::Oid::from_str(hex) {
@@ -38,6 +45,27 @@ impl CommitId {
 impl Display for CommitId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.oid.to_string().as_str())
+    }
+}
+
+impl Display for CommitTag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ReviewedBy => f.write_str("Reviewed-by")?,
+            Self::SignedOffBy => f.write_str("Signed-off-by")?,
+            Self::Custom(tag) => f.write_fmt(format_args!("{}", tag))?,
+        }
+        Ok(())
+    }
+}
+
+impl From<&str> for CommitTag {
+    fn from(value: &str) -> Self {
+        match value {
+            "rb" => CommitTag::ReviewedBy,
+            "so" => CommitTag::SignedOffBy,
+            _ => CommitTag::Custom(String::from(value)),
+        }
     }
 }
 
