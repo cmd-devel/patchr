@@ -3,7 +3,7 @@ use std::ops::ControlFlow;
 use log::debug;
 
 use crate::{
-    cli_print_error, commands::common::edit_in_text_editor, user_data::user_data::UserData,
+    cli_print_error, commands::common::edit_in_text_editor, get_repo_mut_or_fail, user_data::user_data::UserData
 };
 
 use super::{Command, CommandBuilder, CommandBuilderError, EDIT_REVISION};
@@ -44,12 +44,7 @@ impl Command for EditRevision {
         debug!("Edit revision");
 
         let user_config = user_data.config().clone();
-
-        let Some(repo) = user_data.repo_mut() else {
-            // use a function to factor that
-            cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_mut_or_fail!(user_data);
 
         let Some(series) = repo
             .repo_mut()

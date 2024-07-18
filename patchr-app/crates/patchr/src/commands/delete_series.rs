@@ -2,7 +2,7 @@ use std::ops::ControlFlow;
 
 use log::debug;
 
-use crate::{cli_print, cli_print_error, user_data::user_data::UserData};
+use crate::{cli_print, cli_print_error, get_repo_mut_or_fail, user_data::user_data::UserData};
 
 use super::{Command, CommandBuilder, CommandBuilderError, DELETE_SERIES};
 
@@ -34,10 +34,8 @@ impl DeleteSeriesBuilder {
 impl Command for DeleteSeries {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("Delete series");
-        let Some(repo) = user_data.repo_mut() else {
-            cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_mut_or_fail!(user_data);
+
         match repo.repo_mut().delete_series(self.name.as_str()) {
             Ok(_) => {
                 cli_print!("Series deleted");

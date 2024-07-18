@@ -2,7 +2,7 @@ use std::ops::ControlFlow;
 
 use log::debug;
 
-use crate::cli_print;
+use crate::{cli_print, get_repo_mut_or_fail};
 use crate::{cli_print_error, user_data::user_data::UserData};
 
 use super::{Command, CommandBuilder, CommandBuilderError, ADD_REVISION};
@@ -35,10 +35,7 @@ impl AddRevisionBuilder {
 impl Command for AddRevision {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("Add revision to {}", self.series_name);
-        let Some(repo) = user_data.repo_mut() else {
-            cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_mut_or_fail!(user_data);
 
         let Some(series) = repo
             .repo_mut()

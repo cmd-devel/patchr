@@ -6,11 +6,10 @@ use git::{
     repo::RepoData,
     series::SeriesLog,
 };
-use log::{debug, trace};
+use log::debug;
 
 use crate::{
-    cli_print, cli_print_error,
-    user_data::user_data::{root_tmp_dir_path, UserData},
+    cli_print, cli_print_error, get_repo_or_fail, user_data::user_data::{root_tmp_dir_path, UserData}
 };
 
 use super::{Command, CommandBuilder, CommandBuilderError, SEND_SERIES};
@@ -137,11 +136,7 @@ impl Command for SendSeries {
         debug!("Send series");
 
         let user_config = user_data.config().clone();
-
-        let Some(repo) = user_data.repo() else {
-            trace!("cannot get the current repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_or_fail!(user_data);
 
         let Some(series) = repo.repo().get_series_by_name(self.series_name.as_str()) else {
             cli_print_error!("Unknown series : {}", self.series_name.as_str());
