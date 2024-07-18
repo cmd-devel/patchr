@@ -1,5 +1,7 @@
 use std::{fmt::Display, path::PathBuf};
 
+use common::util::misc::LINE_SEP;
+
 use crate::GitError;
 
 // Define wrappers so that we do not expose libgit2
@@ -182,6 +184,50 @@ impl<'a> Commit<'a> {
                 result
             }
         }
+    }
+
+    fn prepare_tag(tag: &CommitTag, tag_value: Option<&str>) -> String {
+        let mut tag = tag.to_string();
+        if let Some(v) = tag_value {
+            tag.push_str(format!(": {}", v).as_str());
+        }
+        tag
+    }
+
+    pub fn add_tag(
+        &self, tag: &CommitTag, tag_value: Option<&str>,
+    ) -> Result<CommitId, GitError> {
+        let full_tag = Self::prepare_tag(tag, tag_value);
+        let message = self.message()?;
+        if message.lines().any(|l| l == full_tag) {
+            return Ok(self.id()); // Commit message already contains the tag
+        }
+
+        let mut message = String::from(message);
+        message.push_str(format!("{}{}", LINE_SEP, full_tag).as_str());
+        self.set_message(message.as_str())
+    }
+
+    pub fn remove_tag(&self, tag: &CommitTag, tag_value: Option<&str>) -> Result<CommitId, GitError> {
+        let full_tag = Self::prepare_tag(tag, tag_value).to_lowercase();
+        let message = self.message()?;
+        let new_message: String = message.lines().filter_map(|l| {
+            if l.to_lowercase() == full_tag {
+                None
+            } else {
+                Some(format!("{}{}", l, LINE_SEP))
+            }
+        }).collect();
+        self.set_message(new_message.as_str())
+    }
+
+    pub fn remove_tag_all(&self, tag: &CommitTag) -> Result<CommitId, GitError> {
+        let full_tag = Self::prepare_tag(tag, Some("")).to_lowercase();
+        let message = self.message()?;
+        let new_message: String = message.lines().filter(|&l| {
+            !l.to_lowercase().starts_with(&full_tag)
+        }).collect();
+        self.set_message(new_message.as_str())
     }
 }
 
