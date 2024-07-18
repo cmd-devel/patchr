@@ -41,7 +41,7 @@ impl EditRevisionBuilder {
 
 impl Command for EditRevision {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
-        debug!("Edtt revision");
+        debug!("Edit revision");
 
         let user_config = user_data.config().clone();
 
