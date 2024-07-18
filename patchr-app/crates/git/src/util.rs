@@ -11,6 +11,7 @@ pub struct GitRepo {
 
 pub struct Commit<'a> {
     commit: git2::Commit<'a>,
+    repo: &'a GitRepo,
 }
 
 pub struct CommitId {
@@ -87,7 +88,7 @@ impl GitRepo {
             let Ok(commit) = self.repo.find_commit(oid) else {
                 return Err(GitError::repo_op_failed(format!("Failed to find the commit with hash {}", oid.to_string()).as_str()));
             };
-            if !func(&Commit::new(commit)) {
+            if !func(&Commit::new(commit, self)) {
                 return Ok(());
             }
         }
@@ -97,7 +98,7 @@ impl GitRepo {
     pub fn find_commit(&self, commit: &CommitId) -> Result<Commit, GitError> {
         match self.repo.find_commit(commit.oid) {
             Ok(c) => {
-                return Ok(Commit::new(c))
+                return Ok(Commit::new(c, self))
             }
             Err(e) => {
                 return Err(GitError::repo_op_failed(e.message()))
@@ -108,8 +109,8 @@ impl GitRepo {
 }
 
 impl<'a> Commit<'a> {
-    fn new(commit: git2::Commit<'a>) -> Self {
-        Commit { commit }
+    fn new(commit: git2::Commit<'a>, repo: &'a GitRepo) -> Self {
+        Commit { commit, repo }
     }
 
     pub fn id(&self) -> CommitId {
