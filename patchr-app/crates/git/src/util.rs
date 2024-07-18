@@ -120,6 +120,69 @@ impl<'a> Commit<'a> {
     pub fn short_name(&self) -> &str {
         self.commit.summary().unwrap_or("")
     }
+
+    pub fn message(&self) -> Result<&str, GitError> {
+        match self.commit.message_raw() {
+            Some(m) => Ok(m),
+            None => {
+                Err(GitError::repo_op_failed("Failed to retrieve the commit message"))
+            }
+        }
+    }
+
+    pub fn set_message(&self, message: &str) -> Result<CommitId, GitError> {
+        let parent = self.commit.parent_id(0)
+            .map_err(|e| GitError::repo_op_failed(e.message()))?;
+        let annotated = self.repo.repo.find_annotated_commit(parent)
+            .map_err(|e | GitError::repo_op_failed(e.message()))?;
+        let mut rebase = self.repo.repo.rebase(None, Some(&annotated), None, None)
+            .map_err(|e| GitError::repo_op_failed(e.message()))?;
+
+        let mut result: Result<CommitId, _> = Err(GitError::repo_op_failed("Commit unreachable"));
+        while let Some(op) = rebase.next() {
+            match op {
+                Ok(r) => {
+                    let current_commit = self.repo.repo.find_commit(r.id()).unwrap();
+                    let found = r.id() == self.commit.id();
+                    let commit_res = if found {
+                        rebase.commit(None, &current_commit.committer(), Some(message))
+                    } else {
+                        rebase.commit(None, &current_commit.committer(), None)
+                    };
+
+                    match commit_res {
+                        Ok(oid) => {
+                            if found {
+                                result = Ok(CommitId::from_oid(oid))
+                            }
+                        }
+                        Err(e) => {
+                            result = Err(GitError::repo_op_failed(e.message()));
+                            break;
+                        }
+                    }
+                }
+                Err(e) => {
+                    result = Err(GitError::repo_op_failed(e.message()));
+                    break;
+                }
+            }
+        };
+
+        match result {
+            Ok(commit_id) => {
+                match rebase.finish(None) {
+                    Ok(_) => Ok(commit_id),
+                    Err(e) => Err(GitError::repo_op_failed(e.message()))
+                }
+            }
+            Err(_) => {
+                // Try our best to clean up and return the error
+                let _ = rebase.abort();
+                result
+            }
+        }
+    }
 }
 
 pub fn find_repo_root(path: &str) -> Option<PathBuf> {
