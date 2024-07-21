@@ -71,10 +71,7 @@ impl CommandBuilder for CreateSeriesBuilder {
             return Ok(());
         }
 
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn name(&self) -> &str {

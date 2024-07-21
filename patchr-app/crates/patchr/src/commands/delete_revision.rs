@@ -67,16 +67,11 @@ impl CommandBuilder for DeleteRevisionBuilder {
                 self.revision = Some(parsed_value);
                 return Ok(());
             } else {
-                return Err(CommandBuilderError::new(
-                    super::CommandBuilderErrorCode::UnexpectedValue,
-                    String::from(value),
-                ));
+                return Err(CommandBuilderError::unexpected_value(value));
             }
         }
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn name(&self) -> &str {

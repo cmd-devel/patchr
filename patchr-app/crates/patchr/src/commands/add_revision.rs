@@ -54,10 +54,7 @@ impl Command for AddRevision {
 impl CommandBuilder for AddRevisionBuilder {
     fn add_value(&mut self, value: &str) -> Result<(), CommandBuilderError> {
         if self.series_name.is_some() {
-            Err(CommandBuilderError::new(
-                super::CommandBuilderErrorCode::UnexpectedValue,
-                String::from(value),
-            ))
+            Err(CommandBuilderError::unexpected_value(value))
         } else {
             self.series_name = Some(String::from(value));
             Ok(())

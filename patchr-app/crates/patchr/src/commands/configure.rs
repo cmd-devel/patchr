@@ -151,10 +151,7 @@ impl CommandBuilder for ConfigureBuilder {
                 self.option = Some(option);
                 return Ok(());
             }
-            return Err(CommandBuilderError::new(
-                super::CommandBuilderErrorCode::UnexpectedValue,
-                String::from(value),
-            ));
+            return Err(CommandBuilderError::unexpected_value(value));
         }
 
         if self.value.is_none() {
@@ -162,10 +159,7 @@ impl CommandBuilder for ConfigureBuilder {
             return Ok(());
         }
 
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn add_flag(&mut self, flag: &str) -> Result<(), CommandBuilderError> {

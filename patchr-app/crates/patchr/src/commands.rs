@@ -94,10 +94,7 @@ pub trait CommandBuilder {
     }
 
     fn add_value(&mut self, value: &str) -> Result<(), CommandBuilderError> {
-        Err(CommandBuilderError::new(
-            CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn add_flag_and_value(&mut self, flag: &str, _value: &str) -> Result<(), CommandBuilderError> {
@@ -134,6 +131,13 @@ impl CommandBuilderError {
 
     pub fn message_move(self) -> String {
         self.message
+    }
+
+    pub fn unexpected_value(value: &str) -> Self {
+        CommandBuilderError::new(
+            CommandBuilderErrorCode::UnexpectedValue,
+            String::from(value),
+        )
     }
 }
 

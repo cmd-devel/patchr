@@ -235,10 +235,7 @@ impl CommandBuilder for SendSeriesBuilder {
             return Ok(());
         }
 
-        return Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ));
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn add_flag_and_value(&mut self, flag: &str, value: &str) -> Result<(), CommandBuilderError> {
