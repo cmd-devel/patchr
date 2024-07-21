@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{GitError, GitErrorCode};
+use crate::GitError;
 
 // Define wrappers so that we do not expose libgit2
 // structs to the rest of the code
@@ -20,26 +20,16 @@ impl GitRepo {
     }
 
     pub fn walk_from_head<F: FnMut(&Commit) -> bool>(&self, func: &mut F) -> Result<(), GitError> {
-        let mut revwalk = self.repo.revwalk().ok().ok_or(GitError::new(
-            GitErrorCode::RepoOpFailed,
-            String::from("Failed to initialize the iterator"),
-        ))?;
-        revwalk.push_head().ok().ok_or(GitError::new(
-            GitErrorCode::RepoOpFailed,
-            String::from("Failed to initialize the iterator"),
-        ))?;
+        let mut revwalk = self.repo.revwalk().ok().ok_or(
+            GitError::repo_op_failed("Failed to initialize the iterator")
+        )?;
+        revwalk.push_head().ok().ok_or(GitError::repo_op_failed("Failed to initialize the iterator"))?;
         for roid in revwalk {
             let Ok(oid) = roid else {
-                return Err(GitError::new(
-                    GitErrorCode::RepoOpFailed,
-                    String::from("Failed retrieve the new commit id"),
-                ));
+                return Err(GitError::repo_op_failed("Failed retrieve the new commit id"));
             };
             let Ok(commit) = self.repo.find_commit(oid) else {
-                return Err(GitError::new(
-                    GitErrorCode::RepoOpFailed,
-                    format!("Failed to find the commit with hash {}", oid.to_string()),
-                ));
+                return Err(GitError::repo_op_failed(format!("Failed to find the commit with hash {}", oid.to_string()).as_str()));
             };
             if !func(&Commit::new(commit)) {
                 return Ok(());
