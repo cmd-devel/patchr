@@ -78,7 +78,7 @@ impl SendSeries {
         let mut first_last: (Option<String>, Option<String>, bool) = (None, None, false);
 
         let res = repo.open_git_repo()?.walk_from_head(&mut |commit| {
-            cli_print!("Commit : {}", commit.hash());
+            cli_print!("Commit : {}", commit.id());
             cli_print!("Summary: {}", commit.short_name());
             let mut k = String::new();
             if io::stdin().read_line(&mut k).is_err() {
@@ -88,12 +88,13 @@ impl SendSeries {
             }
             cli_print!(); // new line
             if k.trim().eq_ignore_ascii_case(YES_KEY) {
+                let hash = commit.id().to_string();
                 if first_last.1.is_none() {
-                    first_last.1 = Some(commit.hash());
-                    cli_print!("{} marked as last commit{}", commit.hash(), LINE_SEP);
+                    first_last.1 = Some(hash.clone());
+                    cli_print!("{} marked as last commit{}", hash, LINE_SEP);
                 } else {
-                    first_last.0 = Some(commit.hash());
-                    cli_print!("{} marked as first commit{}", commit.hash(), LINE_SEP);
+                    first_last.0 = Some(hash.clone());
+                    cli_print!("{} marked as first commit{}", hash, LINE_SEP);
                     return false;
                 }
             }

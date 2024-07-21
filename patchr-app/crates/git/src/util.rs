@@ -72,8 +72,8 @@ impl<'a> Commit<'a> {
         Commit { commit }
     }
 
-    pub fn hash(&self) -> String {
-        self.commit.id().to_string()
+    pub fn id(&self) -> CommitId {
+        CommitId::from_oid(self.commit.id())
     }
 
     pub fn short_name(&self) -> &str {
