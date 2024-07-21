@@ -40,25 +40,33 @@ pub fn edit_in_text_editor(user_config: &UserConfig, content: &str) -> Option<St
 
 #[macro_export]
 macro_rules! get_repo_or_fail {
-    ($user_data:ident) => {
+    ($user_data:ident, $err:expr) => {
         if let Some(repo) = $user_data.repo() {
             repo
         } else {
             cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());            
+            return $err;
         }
+    };
+
+    ($user_data:ident) => {
+        get_repo_or_fail!($user_data, ControlFlow::Break(()))
     };
 }
 
 #[macro_export]
 macro_rules! get_repo_mut_or_fail {
-    ($user_data:ident) => {
+    ($user_data:ident, $err:expr) => {
         if let Some(repo) = $user_data.repo_mut() {
             repo
         } else {
             cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());            
+            return $err;
         }
+    };
+
+    ($user_data:ident) => {
+        get_repo_mut_or_fail!($user_data, ControlFlow::Break(()))
     };
 }
 
