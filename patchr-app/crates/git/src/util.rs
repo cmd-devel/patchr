@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fmt::Display, path::PathBuf};
 
 use crate::GitError;
 
@@ -11,6 +11,34 @@ pub struct GitRepo {
 
 pub struct Commit<'a> {
     commit: git2::Commit<'a>,
+}
+
+pub struct CommitId {
+    oid: git2::Oid,
+}
+
+impl CommitId {
+    pub fn new(hex: &str) -> Result<Self, GitError> {
+        let oid = match git2::Oid::from_str(hex) {
+            Ok(o) => o,
+            Err(e) => {
+                return Err(GitError::repo_op_failed(e.message()));
+            }
+        };
+        Ok(Self {
+            oid
+        })
+    }
+
+    fn from_oid(oid: git2::Oid) -> Self {
+        Self { oid }
+    }
+}
+
+impl Display for CommitId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.oid.to_string().as_str())
+    }
 }
 
 impl GitRepo {
