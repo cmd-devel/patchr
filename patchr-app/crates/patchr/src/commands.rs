@@ -19,8 +19,10 @@ pub mod register_repo;
 pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
+pub mod tag_untag;
 
 use cleantmp::CleanTmp;
+use tag_untag::{Tag, UnTag};
 
 use crate::user_data::user_data::UserData;
 
@@ -65,6 +67,8 @@ declare_command!(SHOW_SERIES, show);
 declare_command!(ADD_LIST, addlist);
 declare_command!(DELETE_LIST, dellist);
 declare_command!(CLEAN_TMP, cleantmp);
+declare_command!(TAG, tag);
+declare_command!(UNTAG, untag);
 
 pub trait Command {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()>;
@@ -159,6 +163,8 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         ADD_LIST => Some(AddMailingList::builder()),
         DELETE_LIST => Some(DeleteMailingList::builder()),
         CLEAN_TMP => Some(CleanTmp::builder()),
+        TAG => Some(Tag::builder()),
+        UNTAG => Some(UnTag::builder()),
         _ => None,
     }
 }

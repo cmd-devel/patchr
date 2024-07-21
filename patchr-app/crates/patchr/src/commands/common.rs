@@ -61,3 +61,16 @@ macro_rules! get_repo_mut_or_fail {
         }
     };
 }
+
+#[macro_export]
+macro_rules! open_git_repo_or_fail {
+    ($repo_data:ident) => {
+        match $repo_data.open_git_repo() {
+            Some(r) => r,
+            None => {
+                cli_print!("Repo cannot be opened");
+                return ControlFlow::Break(());
+            }
+        }
+    };
+}
