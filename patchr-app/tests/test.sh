@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
-PATCHR_BIN=$(realpath ../target/debug/patchr)
+BIN=$(realpath ../target/debug/patchr)
+source ./util.sh
 
 set -ex
 
@@ -19,13 +20,13 @@ get_all_tests() {
 }
 
 run_tests() {
-    local bin="$1"
-    local tmp_dir="$2"
-    local tests_to_run=("${@:3}")
+    local tmp_dir="$1"
+    local tests_to_run=("${@:2}")
     for t in "${tests_to_run[@]}"
     do
         echo "Running $t... "
-        "$t" "$bin" "$tmp_dir"
+        clear_data_dir
+        "$t" "$BIN" "$tmp_dir"
     done
 
     echo "All tests passed"
@@ -33,6 +34,7 @@ run_tests() {
 
 cd "$(dirname $0)"
 tmp_dir="$(init_tmp_env /tmp)"
+export HOME="$tmp_dir" # use a temporary .patchr directory
 
 # Check if the user wants to run all the tests or just a subset
 if [ "$#" -ge 1 ]
@@ -42,6 +44,6 @@ else
     tests_to_run=( $(get_all_tests) )
 fi
 
-run_tests "$PATCHR_BIN" "$tmp_dir" "${tests_to_run[@]}"
+run_tests "$tmp_dir" "${tests_to_run[@]}"
 
 clean_tmp_env "$tmp_dir"
