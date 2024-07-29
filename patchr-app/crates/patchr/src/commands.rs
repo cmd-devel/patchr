@@ -19,8 +19,10 @@ pub mod register_repo;
 pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
+pub mod tag_untag;
 
 use cleantmp::CleanTmp;
+use tag_untag::{Tag, UnTag};
 
 use crate::user_data::user_data::UserData;
 
@@ -65,6 +67,8 @@ declare_command!(SHOW_SERIES, show);
 declare_command!(ADD_LIST, addlist);
 declare_command!(DELETE_LIST, dellist);
 declare_command!(CLEAN_TMP, cleantmp);
+declare_command!(TAG, tag);
+declare_command!(UNTAG, untag);
 
 pub trait Command {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()>;
@@ -94,10 +98,7 @@ pub trait CommandBuilder {
     }
 
     fn add_value(&mut self, value: &str) -> Result<(), CommandBuilderError> {
-        Err(CommandBuilderError::new(
-            CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn add_flag_and_value(&mut self, flag: &str, _value: &str) -> Result<(), CommandBuilderError> {
@@ -135,6 +136,13 @@ impl CommandBuilderError {
     pub fn message_move(self) -> String {
         self.message
     }
+
+    pub fn unexpected_value(value: &str) -> Self {
+        CommandBuilderError::new(
+            CommandBuilderErrorCode::UnexpectedValue,
+            String::from(value),
+        )
+    }
 }
 
 pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
@@ -155,6 +163,8 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         ADD_LIST => Some(AddMailingList::builder()),
         DELETE_LIST => Some(DeleteMailingList::builder()),
         CLEAN_TMP => Some(CleanTmp::builder()),
+        TAG => Some(Tag::builder()),
+        UNTAG => Some(UnTag::builder()),
         _ => None,
     }
 }

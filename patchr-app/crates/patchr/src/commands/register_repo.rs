@@ -63,10 +63,7 @@ impl Command for RegisterRepo {
 impl CommandBuilder for RegisterRepoBuilder {
     fn add_value(&mut self, value: &str) -> Result<(), CommandBuilderError> {
         if self.name.is_some() {
-            Err(CommandBuilderError::new(
-                super::CommandBuilderErrorCode::UnexpectedValue,
-                String::from(value),
-            ))
+            Err(CommandBuilderError::unexpected_value(value))
         } else {
             self.name = Some(String::from(value));
             Ok(())

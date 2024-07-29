@@ -2,7 +2,7 @@ use std::ops::ControlFlow;
 
 use log::debug;
 
-use crate::{cli_print_error, user_data::user_data::UserData};
+use crate::{cli_print_error, get_repo_mut_or_fail, user_data::user_data::UserData};
 
 use super::{Command, CommandBuilder, CommandBuilderError, DELETE_REVISION};
 
@@ -40,10 +40,7 @@ impl DeleteRevisionBuilder {
 impl Command for DeleteRevision {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("Delete revision {} from {}", self.revision, self.series_name);
-        let Some(repo) = user_data.repo_mut() else {
-            cli_print_error!("Not in a repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_mut_or_fail!(user_data);
 
         let Some(series) = repo
             .repo_mut()
@@ -70,16 +67,11 @@ impl CommandBuilder for DeleteRevisionBuilder {
                 self.revision = Some(parsed_value);
                 return Ok(());
             } else {
-                return Err(CommandBuilderError::new(
-                    super::CommandBuilderErrorCode::UnexpectedValue,
-                    String::from(value),
-                ));
+                return Err(CommandBuilderError::unexpected_value(value));
             }
         }
-        Err(CommandBuilderError::new(
-            super::CommandBuilderErrorCode::UnexpectedValue,
-            String::from(value),
-        ))
+
+        Err(CommandBuilderError::unexpected_value(value))
     }
 
     fn name(&self) -> &str {

@@ -28,6 +28,10 @@ impl GitError {
     pub fn new(code: GitErrorCode, message: String) -> Self {
         Self { code, message }
     }
+
+    pub fn repo_op_failed(msg: &str) -> GitError {
+        GitError::new(GitErrorCode::RepoOpFailed, String::from(msg))
+    }
 }
 
 impl Display for GitError {

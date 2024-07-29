@@ -2,7 +2,7 @@ use std::ops::ControlFlow;
 
 use log::debug;
 
-use crate::{cli_print, cli_print_error, user_data::user_data::UserData};
+use crate::{cli_print, cli_print_error, get_repo_or_fail, user_data::user_data::UserData};
 
 use super::{Command, CommandBuilder, CommandBuilderError, LIST_SERIES};
 
@@ -29,11 +29,7 @@ impl Command for ListSeries {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("List series");
 
-        // check if we always get the repo the same way (for consistency)
-        let Some(repo) = user_data.repo() else {
-            cli_print_error!("Cannot get the current repo");
-            return ControlFlow::Break(());
-        };
+        let repo = get_repo_or_fail!(user_data);
         repo.repo().series().iter().for_each(|s| {
             cli_print!("- {} (v{})", s.name(), s.current_revision());
         });

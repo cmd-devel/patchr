@@ -35,6 +35,18 @@ Repo:
     - Delete the current repo
         patchr delrepo
 
+Commits:
+    - Tag a commit
+        patchr tag <commit> <tag> <value>
+            tag: if the value is 'rb' (Reviewed-by) or 'so' (Signed-off-by),
+                 it will be replaced with the expanded tag name.
+                 Otherwise, the tag is used as is.
+
+    - Un-tag a commit
+        patchr untag <commit> <tag> [value]
+            tag: see the tagging command
+            value: if not provided, remove all the lines that match the tag
+
 Series:
     The following commands can only be called from a registered repo
 

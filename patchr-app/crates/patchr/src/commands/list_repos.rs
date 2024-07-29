@@ -29,9 +29,10 @@ impl ListReposBuilder {
 impl Command for ListRepos {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("List repos");
+        let current_repo = user_data.repo();
         user_data.repos().iter().for_each(|r| {
             let mut line = ColoredString::from(format!("- {} : {}", r.name(), r.path()));
-            if user_data.repo().unwrap().meta() == r {
+            if current_repo.is_some_and(|cr| cr.meta() == r) {
                 line = line.green();
             }
             cli_print!("{}", line);
