@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+cd $(dirname $0)
+
 BIN="$(realpath ../target/release/patchr)"
 source ./util.sh
 
@@ -32,7 +34,10 @@ run_tests() {
     echo "All tests passed"
 }
 
-cd "$(dirname $0)"
+# Run cargo test first
+cargo build -r
+cargo test
+
 tmp_dir="$(init_tmp_env /tmp)"
 export HOME="$tmp_dir" # use a temporary .patchr directory
 
