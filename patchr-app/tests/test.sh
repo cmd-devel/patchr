@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-BIN=$(realpath ../target/debug/patchr)
+BIN="$(realpath ../target/release/patchr)"
 source ./util.sh
 
 set -ex
