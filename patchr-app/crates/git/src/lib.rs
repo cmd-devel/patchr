@@ -1,5 +1,8 @@
 use std::fmt::{Debug, Display};
 
+#[cfg(test)]
+mod test;
+
 pub mod patch_sender;
 pub mod repo;
 pub mod series;
