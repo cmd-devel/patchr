@@ -14,7 +14,7 @@ use crate::{GitError, GitErrorCode};
 lazy_static! {
     static ref SERIES_TITLE_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9 _-]+$").unwrap();
     static ref SERIES_NAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap();
-    static ref SERIES_SHORT_NAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_-]{1,24}$").unwrap();
+    static ref SERIES_SHORT_NAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9_-]{0,24}$").unwrap();
 }
 
 #[derive(Serialize, Deserialize)]
