@@ -35,6 +35,50 @@ fn test_series_revs() {
         assert_eq!(series.current_revision(), i);
         series.delete_revision(2);
     }
+    assert_eq!(series.current_revision(), 1);
+    series.add_revision();
+    series.add_revision();
+    series.add_revision();
+    series.add_revision();
+    assert_eq!(series.current_revision(), 5);
+    series.delete_revision(0);
+    assert_eq!(series.current_revision(), 5);
+    series.delete_revision(1);
+    assert_eq!(series.current_revision(), 5);
+}
+
+#[test]
+fn test_series_revs_data() {
+    let gen_content = |i| { format!("This is revision {}", i) };
+    let mut series = Series::new("Name", "Title").unwrap();
+    for i in 2..10 {
+        series.add_revision();
+        let rev = series.revision_mut(i).unwrap();
+        assert_eq!(rev.content(), "");
+        rev.set_content(gen_content(i).as_str());
+    }
+
+    assert_eq!(series.revision_mut(6).unwrap().content(), gen_content(6).as_str());
+    series.delete_revision(6);
+    assert_eq!(series.revision_mut(8).unwrap().content(), gen_content(9).as_str());
+    series.delete_revision(8);
+    assert_eq!(series.revision_mut(2).unwrap().content(), gen_content(2).as_str());
+    series.delete_revision(2);
+    assert_eq!(series.revision_mut(5).unwrap().content(), gen_content(7).as_str());
+    series.delete_revision(5);
+    assert_eq!(series.revision_mut(5).unwrap().content(), gen_content(8).as_str());
+    series.delete_revision(5);
+    assert_eq!(series.revision_mut(3).unwrap().content(), gen_content(4).as_str());
+    series.delete_revision(3);
+    assert_eq!(series.revision_mut(2).unwrap().content(), gen_content(3).as_str());
+    series.delete_revision(2);
+    assert_eq!(series.revision_mut(2).unwrap().content(), gen_content(5).as_str());
+    series.delete_revision(2);
+    assert_eq!(series.current_revision(), 1);
+    series.delete_revision(1);
+    assert_eq!(series.current_revision(), 1);
+    series.delete_revision(0);
+    assert_eq!(series.current_revision(), 1);
 }
 
 #[test]
