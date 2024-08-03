@@ -2,12 +2,6 @@
 
 source "$(dirname $0)/../prolog.sh"
 
-create_test_repo() {
-    d=$(mktemp -d -p "$TMP_DIR")
-    (cd "$d" && git init .) > /dev/null 2>&1
-    echo "$d"
-}
-
 test_register_delete() {
     check_json_root_file '.repos | length' 0
 

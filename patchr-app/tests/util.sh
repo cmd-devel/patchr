@@ -61,3 +61,9 @@ known_repo() {
 
     return 0
 }
+
+create_test_repo() {
+    d=$(mktemp -d -p "$TMP_DIR")
+    (cd "$d" && git init .) > /dev/null 2>&1
+    echo "$d"
+}
