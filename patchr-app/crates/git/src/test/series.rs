@@ -112,6 +112,9 @@ fn test_series_short_name() {
     assert!(series.set_short_name("not_a_space").is_ok());
     assert_eq!(series.short_name(), "not_a_space");
 
+    assert!(series.set_short_name("not.a.space").is_ok());
+    assert_eq!(series.short_name(), "not.a.space");
+
     assert!(series.set_short_name("not+allowed").is_err());
     assert!(series.set_short_name("fancy-name-that-is-not-so-short").is_err());
 
