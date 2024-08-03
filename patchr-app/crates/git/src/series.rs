@@ -201,7 +201,7 @@ impl Series {
         }
     }
 
-    fn validate_name(name: &str) -> Option<&str> {
+    pub fn validate_name(name: &str) -> Option<&str> {
         let name = name.trim();
         if SERIES_NAME_REGEX.is_match(name) {
             Some(name)
@@ -210,7 +210,7 @@ impl Series {
         }
     }
 
-    fn validate_short_name(short_name: &str) -> Option<&str> {
+    pub fn validate_short_name(short_name: &str) -> Option<&str> {
         let short_name = short_name.trim();
         if SERIES_SHORT_NAME_REGEX.is_match(short_name) {
             Some(short_name)

@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 use common::constants::PROJECT_VERSION;
 use serde::{Deserialize, Serialize};
 
@@ -25,14 +27,25 @@ pub struct Repo {
 
 impl RepoMetadata {
     pub fn new(name: &str, path: &str) -> Self {
+        let abs_path = fs::canonicalize(path).expect("Tried to find canonicalize an invalid path");
         Self {
             name: String::from(name),
-            path: String::from(path),
+            path: abs_path.to_string_lossy().to_string(),
         }
     }
 
     pub fn name(&self) -> &str {
         self.name.as_str()
+    }
+
+    pub fn dirname(&self) -> String {
+        Path::new(self.path.as_str())
+            .components()
+            .last()
+            .unwrap()
+            .as_os_str()
+            .to_string_lossy()
+            .to_string()
     }
 
     pub fn path(&self) -> &str {
@@ -82,8 +95,10 @@ impl Repo {
         self.series.as_slice()
     }
 
-    pub fn add_series(&mut self, name: &str, title: &str) -> Result<(), GitError> {
-        let Some(series) = Series::new(name, title) else {
+    pub fn add_series(
+        &mut self, name: &str, title: &str, short_name: Option<&str>,
+    ) -> Result<(), GitError> {
+        let Some(mut series) = Series::new(name, title) else {
             return Err(GitError::new(
                 GitErrorCode::FailedToCreateSeries,
                 String::from("Invalid inputs"),
@@ -94,6 +109,9 @@ impl Repo {
                 GitErrorCode::SeriesAlreadyExists,
                 String::from("Series already exists"),
             ));
+        }
+        if let Some(s) = short_name {
+            series.set_short_name(s)?;
         }
         self.series.push(series);
         Ok(())

@@ -1,5 +1,6 @@
 use std::ops::ControlFlow;
 
+use git::series::Series;
 use log::debug;
 
 use crate::{cli_print, cli_print_error, get_repo_mut_or_fail, user_data::user_data::UserData};
@@ -42,10 +43,17 @@ impl Command for CreateSeries {
         debug!("Create series");
         let repo = get_repo_mut_or_fail!(user_data);
 
-        match repo
-            .repo_mut()
-            .add_series(self.name.as_str(), self.title.as_str())
-        {
+        let repo_dirname = repo.meta().dirname();
+        let short_name = Series::validate_short_name(repo_dirname.as_str());
+
+        if short_name.is_none() {
+            cli_print!("The repo name cannot be used as a short name")
+        }
+        match repo.repo_mut().add_series(
+            self.name.as_str(),
+            self.title.as_str(),
+            short_name,
+        ) {
             Ok(_) => {
                 cli_print!("Series created");
                 ControlFlow::Continue(())
