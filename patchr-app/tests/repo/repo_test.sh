@@ -59,4 +59,61 @@ test_list() {
     [ $(echo "$out" | grep "^- repo1" | wc -l) = 1 ]
 }
 
-run_test_funcs test_register_delete test_list
+# One should not be able to register the same repo multiple times
+# even if the register command is not executed from the same directory.
+# However, it should be possible to deal with submodules.
+test_register_subdir() {
+    r1="$(create_test_repo)"
+    r2="$(create_test_repo)"
+    cd "$r1"
+
+    mkdir test
+    cd test
+    echo content > file
+    git add file
+    git commit -m 'A file'
+    cd ..
+    git -c protocol.file.allow=always submodule add "$r2" r2
+
+    cd test
+    run register r
+    cd ..
+    (! run register rparent)
+    cd r2
+    run register r2
+    cd ..
+    repo_has_dir r "$r1"
+    repo_has_dir r2 "$r1/r2"
+
+    run create foo 'A series'
+    run list | grep -q ' foo (v1)'
+    cd test
+    run list | grep -q ' foo (v1)'
+    cd ../r2
+    (! run list | grep -q ' foo (v1)')
+    cd ..
+
+    cd r2
+    run create foo2 'Another series'
+    run list | grep -q ' foo2 (v1)'
+    cd ..
+    run list | grep -q ' foo (v1)'
+    (! run list | grep -q ' foo2 (v1)')
+
+    cd test
+    run delrepo
+    ! known_repo r
+    known_repo r2
+    cd ..
+    ! known_repo r
+    known_repo r2
+    cd r2
+    run delrepo
+    ! known_repo r
+    ! known_repo r2
+    cd ..
+    ! known_repo r
+    ! known_repo r2
+}
+
+run_test_funcs test_register_delete test_list test_register_subdir
