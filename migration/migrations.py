@@ -19,16 +19,25 @@ class ConfigFile:
             json.dump(self.content, f, indent=4)
 
 
-def update_version(files, old_version, new_version):
+def update_version(root_file, repos, old_version, new_version):
+    files = [root_file] + repos
     for config_file in files:
         if config_file.content['version'] != old_version:
             return False
         config_file.content['version'] = new_version
     return True
 
+# For updates that only require to modify the version field
+def auto_bump_version(old_version, new_version):
+    def bump(root_file, repos):
+        if not update_version(root_file, repos, old_version, new_version):
+            return False
+        return True
+
+    return bump
 
 def migrate_0_13_to_0_14(root_file, repos):
-    if not update_version([root_file] + repos, '0.13', '0.14'):
+    if not update_version(root_file, repos, '0.13', '0.14'):
         return False
 
     # Add an empty cc field to the repos
