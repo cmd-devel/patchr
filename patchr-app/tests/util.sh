@@ -68,6 +68,17 @@ known_repo() {
     return 0
 }
 
+repo_has_dir() {
+    local name="$1"
+    local dir="$2"
+    if ! check_json_root_file "[.repos[] | (select(.path | . == \"$dir\") and select(.name | . == \"$name\"))] | length" 1
+    then
+        return 1
+    fi
+
+    return 0
+}
+
 create_test_repo() {
     d=$(mktemp -d -p "$TMP_DIR")
     (cd "$d" && git init .) > /dev/null 2>&1
