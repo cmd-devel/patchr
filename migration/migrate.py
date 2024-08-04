@@ -14,6 +14,7 @@ from migrations import *
 # Must be ordered
 VERSIONS = [
     ((0, 14), migrate_0_13_to_0_14),
+    ((0, 15), auto_bump_version('0.14', '0.15')),
 ]
 
 
