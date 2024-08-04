@@ -5,6 +5,11 @@ run() {
     "$BIN" "$@"
 }
 
+setup_fake_editor() {
+    data="$1"
+    run config editor "$FAKE_EDITOR \"$data\""
+}
+
 repo_file() {
     local repo_name="$1"
     echo "$DATA_DIR/$repo_name"

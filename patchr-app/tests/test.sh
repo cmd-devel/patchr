@@ -3,6 +3,9 @@
 cd $(dirname $0)
 
 BIN="$(realpath ../target/release/patchr)"
+
+export FAKE_EDITOR="$(pwd)/fake_editor.sh"
+
 source ./util.sh
 
 set -ex
