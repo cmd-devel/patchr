@@ -20,6 +20,7 @@ pub struct UserConfig {
     smtp_user: Option<String>,
     smtp_port: Option<u16>,
     smtp_encryption: Option<String>,
+    cv_skel: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,6 +41,7 @@ impl UserConfig {
             smtp_user: None,
             smtp_port: None,
             smtp_encryption: None,
+            cv_skel: None,
         }
     }
 
@@ -97,6 +99,14 @@ impl UserConfig {
 
     pub fn set_smtp_encryption(&mut self, smtp_encryption: Option<&str>) {
         self.smtp_encryption = smtp_encryption.map(String::from);
+    }
+
+    pub fn cv_skel(&self) -> Option<&str> {
+        self.cv_skel.as_ref().map(String::as_str)
+    }
+
+    pub fn set_cv_skel(&mut self, cv_skel: Option<&str>) {
+        self.cv_skel = cv_skel.map(String::from);
     }
 }
 

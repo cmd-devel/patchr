@@ -99,6 +99,9 @@ User configuration:
     - Delete a mailing list
         patchr dellist <list name>
 
+    - Set a cover letter skeleton
+        patchr cvskel
+
 Patchr operations:
     - Delete temporary files
         patchr cleantmp

@@ -20,8 +20,10 @@ pub mod send_series;
 pub mod set_verbose;
 pub mod show_series;
 pub mod tag_untag;
+pub mod edit_cv_skel;
 
 use cleantmp::CleanTmp;
+use edit_cv_skel::EditCVSkel;
 use tag_untag::{Tag, UnTag};
 
 use crate::user_data::user_data::UserData;
@@ -69,6 +71,7 @@ declare_command!(DELETE_LIST, dellist);
 declare_command!(CLEAN_TMP, cleantmp);
 declare_command!(TAG, tag);
 declare_command!(UNTAG, untag);
+declare_command!(EDIT_CV_SKEL, cvskel);
 
 pub trait Command {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()>;
@@ -165,6 +168,7 @@ pub fn get_command_builder(name: &str) -> Option<Box<dyn CommandBuilder>> {
         CLEAN_TMP => Some(CleanTmp::builder()),
         TAG => Some(Tag::builder()),
         UNTAG => Some(UnTag::builder()),
+        EDIT_CV_SKEL => Some(EditCVSkel::builder()),
         _ => None,
     }
 }

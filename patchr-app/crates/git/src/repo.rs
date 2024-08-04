@@ -96,7 +96,7 @@ impl Repo {
     }
 
     pub fn add_series(
-        &mut self, name: &str, title: &str, short_name: Option<&str>,
+        &mut self, name: &str, title: &str, short_name: Option<&str>, cv_skel: Option<&str>,
     ) -> Result<(), GitError> {
         let Some(mut series) = Series::new(name, title) else {
             return Err(GitError::new(
@@ -112,6 +112,9 @@ impl Repo {
         }
         if let Some(s) = short_name {
             series.set_short_name(s)?;
+        }
+        if let Some(s) = cv_skel {
+            series.set_cover_letter(s)?;
         }
         self.series.push(series);
         Ok(())

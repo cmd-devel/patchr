@@ -41,6 +41,10 @@ impl CreateSeriesBuilder {
 impl Command for CreateSeries {
     fn exec(&self, user_data: &mut UserData) -> ControlFlow<()> {
         debug!("Create series");
+
+        // Copy the string so that we don't borrow user_data for too long
+        let cv_skel = user_data.config().cv_skel().map(String::from);
+
         let repo = get_repo_mut_or_fail!(user_data);
 
         let repo_dirname = repo.meta().dirname();
@@ -53,6 +57,7 @@ impl Command for CreateSeries {
             self.name.as_str(),
             self.title.as_str(),
             short_name,
+            cv_skel.as_ref().map(String::as_str),
         ) {
             Ok(_) => {
                 cli_print!("Series created");
