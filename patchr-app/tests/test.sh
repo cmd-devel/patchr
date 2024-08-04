@@ -15,6 +15,11 @@ init_tmp_env() {
     mktemp -d -p "$base_dir"
 }
 
+setup_git() {
+    git config --global user.name 'Patchr'
+    git config --global user.email 'test@patchr.com'
+}
+
 clean_tmp_env() {
     local tmp_dir="$1"
     rm -rf "$tmp_dir"
@@ -43,6 +48,7 @@ cargo test
 
 tmp_dir="$(init_tmp_env /tmp)"
 export HOME="$tmp_dir" # use a temporary .patchr directory
+setup_git
 
 # Check if the user wants to run all the tests or just a subset
 if [ "$#" -ge 1 ]
