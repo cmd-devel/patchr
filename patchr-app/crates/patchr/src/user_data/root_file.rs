@@ -137,12 +137,12 @@ impl RootFile {
     pub fn register_repo(
         &mut self, name: &str, path: &str,
     ) -> Result<&RepoMetadata, UserDataError> {
-        if self.repo_exists(name, path) {
-            return Err(UserDataError::new(UserDataErrorCode::RepoAlreadyExists));
-        }
         let Some(path) = find_repo_root(path) else {
             return Err(UserDataError::new(UserDataErrorCode::NotAGitRepo));
         };
+        if self.repo_exists(name, path.to_string_lossy().to_string().as_str()) {
+            return Err(UserDataError::new(UserDataErrorCode::RepoAlreadyExists));
+        }
         let repo = RepoMetadata::new(name, path.to_string_lossy().to_string().as_str());
         self.repos.push(repo);
         Ok(self.repos.last().unwrap())
