@@ -3,6 +3,7 @@ ROOT_FILE="$DATA_DIR/root.json"
 
 run() {
     "$BIN" "$@"
+    return $?
 }
 
 setup_fake_editor() {
