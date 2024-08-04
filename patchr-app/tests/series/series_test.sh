@@ -42,4 +42,18 @@ test_cv_skel() {
     [ "$out" = "$skel" ]
 }
 
-run_test_funcs test_create_series test_cv_skel
+# Set and clear the short name
+test_edit_short_name() {
+    r=$(create_test_repo)
+    cd "$r"
+    run register r
+    run create s 'Test series'
+    setup_fake_editor "shname"
+    run edit short s
+    run show -v s | grep -q '^Short name : shname$'
+    setup_fake_editor ''
+    run edit short s
+    run show -v s | grep -q '^Short name : $'
+}
+
+run_test_funcs test_create_series test_cv_skel test_edit_short_name
